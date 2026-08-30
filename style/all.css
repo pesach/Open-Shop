@@ -71,6 +71,16 @@
 		background-color: rgba(255, 255, 255, 0.1) !important;
 	}
 
+	.topbar .os-logo {
+		width: 18px;
+		height: 18px;
+		vertical-align: middle;
+		margin: 0 8px 0 6px;
+		display: inline-block;
+		cursor: pointer;
+		filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+	}
+
 	/* Fix giant icons in panel heads and layer controls */
 	.miniscale, img.miniscale, svg.miniscale {
 		width: 18px !important;

@@ -182772,6 +182772,11 @@
     this.ap9 = 0;
     this.$.appendChild(this.a1b);
     this.$.appendChild(this.aIP);
+    var _osLogo = b.r("img", "os-logo");
+    _osLogo.src = "promo/icon256.png";
+    _osLogo.setAttribute("style", "width: 18px; height: 18px; vertical-align: middle; margin: 0 8px 0 6px; cursor: pointer; display: inline-block;");
+    _osLogo.setAttribute("title", "Open-Shop");
+    this.a1b.appendChild(_osLogo);
     this.M1 = null;
     this.o = null;
     this.jt = [];
