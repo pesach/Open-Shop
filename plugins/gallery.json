@@ -1,0 +1,20 @@
+[
+  {
+    "name": "QR Code Generator",
+    "url": "https://www.qrcode-monkey.com",
+    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%233b82f6'><rect width='32' height='32' rx='4'/></svg>",
+    "desc": "Generate custom QR codes directly into your active document."
+  },
+  {
+    "name": "Color Palettes",
+    "url": "https://coolors.co",
+    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%2310b981'><rect width='32' height='32' rx='4'/></svg>",
+    "desc": "Browse trending color palettes and copy hex codes."
+  },
+  {
+    "name": "Vector Icons",
+    "url": "https://feathericons.com",
+    "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%238b5cf6'><rect width='32' height='32' rx='4'/></svg>",
+    "desc": "Insert open source vector SVG icons."
+  }
+]

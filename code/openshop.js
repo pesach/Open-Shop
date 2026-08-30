@@ -144006,7 +144006,7 @@
       var S = new XMLHttpRequest();
       var C = "https://pixabay.com/api/?image_type=photo" + (E == "" ? "" : "&q=" + encodeURIComponent(E)) + "&per_page=200&page=1&key=10554583-a5eacb61c2e61105fdfb6eb88&safesearch=true";
       if (E == "") {
-        C = "//www.open-shop.com/plugins/gallery.json";
+        C = "plugins/gallery.json";
       }
       S.open("GET", C, true);
       S.onload = this.a0$.bind(this);

@@ -146,7 +146,12 @@ ppCode = ppCode.replaceAll('photopea', 'open-shop');
 ppCode = ppCode.replaceAll('Vectorpea', 'Open-Shop');
 ppCode = ppCode.replaceAll('vectorpea', 'open-shop');
 
-// 9. Assign window.app
+// 11. Route plugin gallery locally
+ppCode = ppCode.replaceAll('//www.open-shop.com/plugins/gallery.json', 'plugins/gallery.json');
+ppCode = ppCode.replaceAll('//www.photopea.com/plugins/gallery.json', 'plugins/gallery.json');
+ppCode = ppCode.replaceAll('//www.vecpea.com/plugins/gallery.json', 'plugins/gallery.json');
+
+// 12. Assign window.app
 ppCode = ppCode.replace(
   'document.body.appendChild(new dj().$);',
   'window.app = new dj(); document.body.appendChild(window.app.$);'
