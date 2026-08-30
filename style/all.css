@@ -159,30 +159,45 @@
 	
 	.toolbar{
 		border-right-width:1px;
+		background-color: var(--bg-panel);
+	}
+	.toolbar > .top {
+		display: none !important;
 	}
 	.toolbar hr{
 		margin:2px 0;
 	}
 	
 	.toolbar .tools {
-		padding:2px;
+		padding: 3px 2px 2px 2px;
 		display: inline-flex;
 		flex-flow: column wrap;
+		align-items: center;
 	}
 	
 	.toolbar .tools .toolbtn {
 		border-radius:3px;
-		margin:2px 3px 1px 3px;
+		margin:1px 2px;
 		padding:4px 4px;
+		transition: background-color 0.1s ease;
 	}
 	.toolbar .tools button {  position:relative;  }
+	.toolbar .tools .toolbtn:hover {
+		background-color: rgba(255, 255, 255, 0.08);
+	}
+	.toolbar .tools .toolbtn.selected,
+	.toolbar .tools button.selected {
+		background-color: #2563eb !important;
+		color: #ffffff;
+	}
+	.toolbar .tools .toolbtn.selected:hover {
+		background-color: #1d4ed8 !important;
+	}
 	
 	.toolbar .tools button img 
 	{
 		width:var(--img20);
 		height:var(--img20);
-		/*width:20px;
-		height:20px;*/
 		vertical-align:middle;
 	}
 	.toolbar .scont {
