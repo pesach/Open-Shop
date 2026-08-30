@@ -134,6 +134,56 @@
 	div[style*="float: right"] {
 		display: none !important;
 	}
+
+	/* Inputs and Select Controls */
+	input[type="text"], input[type="number"], select, textarea {
+		background-color: #242424 !important;
+		color: #ffffff !important;
+		border: 1px solid #1a1a1a !important;
+		border-radius: 3px !important;
+		padding: 2px 5px !important;
+		outline: none;
+		box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+	}
+	input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+		border-color: #2563eb !important;
+		box-shadow: 0 0 0 1px #2563eb, inset 0 1px 2px rgba(0,0,0,0.4);
+	}
+
+	/* Buttons styling */
+	.bbtn, button.bbtn {
+		background-color: #555555 !important;
+		color: #ffffff !important;
+		border: 1px solid #333333 !important;
+		border-radius: 3px !important;
+		padding: 3px 10px !important;
+		cursor: pointer;
+		font-weight: 500;
+		transition: background-color 0.1s ease;
+	}
+	.bbtn:hover, button.bbtn:hover {
+		background-color: #666666 !important;
+	}
+	.bbtn:active, button.bbtn:active {
+		background-color: #444444 !important;
+	}
+
+	/* Custom dark UI scrollbars */
+	::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+	::-webkit-scrollbar-track {
+		background: #242424;
+	}
+	::-webkit-scrollbar-thumb {
+		background: #505050;
+		border-radius: 4px;
+		border: 2px solid #242424;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: #686868;
+	}
 	
 	.intro {
 		box-shadow: 0px 40px 70px rgba(0,0,0,0.35);
