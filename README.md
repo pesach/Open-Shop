@@ -2,7 +2,9 @@
 
 > **OpenShop Web** is an open-source version of Photopea — an advanced in-browser photo and vector graphics editor supporting PSD, XCF, Sketch, and standard image formats with zero ads, zero telemetry, and 100% offline capability.
 
-![OpenShop Web](promo/thumb256.png)
+<p align="center">
+  <img src="promo/logo.png" width="160" height="160" alt="OpenShop Web Logo">
+</p>
 
 ---
 
