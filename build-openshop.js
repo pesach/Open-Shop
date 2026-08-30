@@ -104,7 +104,32 @@ ppCode = ppCode.replace(
   'Kg: "", d: false,'
 );
 
-// 8. General Branding string cleanup
+// 8. Remove side options: PeaDrive, PeaGames, external Open-Shop launchers, Jampea
+ppCode = ppCode.replace(
+  /r\.push\(\["Open-Shop",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512\.png"\][\s\S]*?\["Jampea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512_jp\.png"\]\);/,
+  '/* side launchers removed */'
+);
+
+ppCode = ppCode.replace(
+  /r\.push\(\["Photopea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512\.png"\][\s\S]*?\["Jampea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512_jp\.png"\]\);/,
+  '/* side launchers removed */'
+);
+
+ppCode = ppCode.replace(
+  /dm\.Jc\s*=\s*\[\["PeaGames"[\s\S]*?\]\];/,
+  'dm.Jc = [];'
+);
+
+ppCode = ppCode.replace(
+  '["PeaDrive", "peadriveStorage.html", "strg/peadrive", true, "A cloud storage system from Photopea."],',
+  ''
+);
+ppCode = ppCode.replace(
+  '["PeaDrive", "peadriveStorage.html", "strg/peadrive", true, "A cloud storage system from Open-Shop."],',
+  ''
+);
+
+// 9. General Branding string cleanup
 ppCode = ppCode.replaceAll('Photopea', 'Open-Shop');
 ppCode = ppCode.replaceAll('photopea', 'open-shop');
 ppCode = ppCode.replaceAll('Vectorpea', 'Open-Shop');
