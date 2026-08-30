@@ -160579,7 +160579,7 @@
     b.v(D, "width:140px; margin-left:12px");
     this.a65 = [iB.FQ, iB.by, iB.rD, iB.wk, iB.rE, iB.u0];
     this.xX = [new lB(), new h$(), new bg(), new iG(), new j2(), new lu()];
-    for (var n = 0; false && n < this.xX.length; n++) {
+    this.qE.style.display = "none"; for (var n = 0; false && n < this.xX.length; n++) {
       this.xX[n].parent = this;
     }
     this.f_ = [];
@@ -182772,11 +182772,11 @@
     this.ap9 = 0;
     this.$.appendChild(this.a1b);
     this.$.appendChild(this.aIP);
-    var _osLogo = b.r("img", "os-logo");
+    var _osLogo = this._osLogo = b.r("img", "os-logo");
     _osLogo.src = "promo/icon256.png";
     _osLogo.setAttribute("style", "width: 18px; height: 18px; vertical-align: middle; margin: 0 8px 0 6px; cursor: pointer; display: inline-block;");
     _osLogo.setAttribute("title", "Open-Shop");
-    this.a1b.appendChild(_osLogo);
+    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);
     this.M1 = null;
     this.o = null;
     this.jt = [];
@@ -182789,7 +182789,7 @@
       P.addEventListener("mouseover", y, false);
       b.nZ(P, y);
     }
-    this.TH = new lN([0, 13, 0], false, null, true); this.TH.$.style.display = "none";
+    this.TH = new lN([0, 13, 0], false, null, true); this.TH.$.style.display = "none"; if (this.TH.$.parentNode) this.TH.$.parentNode.removeChild(this.TH.$);
     this.TH.R("click", this.art, this);
     this.yr = new lN(b.ss("tools/zoom", null, "autoscale"), false, [12, 86]);
     this.yr.R("click", this.art, this);
@@ -182849,6 +182849,7 @@
     if (P == iB.eV) {
       var D = y.aa6;
       b.KY(this.a1b);
+      if (this._osLogo) this.a1b.appendChild(this._osLogo);
       for (var n = 0; n < this.jt.length; n++) {
         var v = kk.data[n];
         if (D == null || D[n] == 1 || D[n] instanceof Array) {
@@ -182861,9 +182862,7 @@
       }
       var r = this.aIP;
       b.KY(r);
-      if (y.h1) {
-        r.appendChild(this.TH.$);
-      }
+      /* Account button permanently excluded */
       r.appendChild(this.yr.$);
       r.appendChild(this.aHr.$);
     }

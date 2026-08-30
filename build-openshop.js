@@ -69,28 +69,38 @@ ppCode = ppCode.replace(
   'ke.wN = function () { return false; }; ke._old_wN = function () {'
 );
 
-// 4. In menubar: Inject Open-Shop logo on the top left before File
+// 4. In menubar: Inject Open-Shop logo on the top left BEFORE File and persist in qv
 ppCode = ppCode.replace(
   'this.$.appendChild(this.a1b);\n    this.$.appendChild(this.aIP);',
   `this.$.appendChild(this.a1b);
     this.$.appendChild(this.aIP);
-    var _osLogo = b.r("img", "os-logo");
+    var _osLogo = this._osLogo = b.r("img", "os-logo");
     _osLogo.src = "promo/icon256.png";
     _osLogo.setAttribute("style", "width: 18px; height: 18px; vertical-align: middle; margin: 0 8px 0 6px; cursor: pointer; display: inline-block;");
     _osLogo.setAttribute("title", "Open-Shop");
-    this.a1b.appendChild(_osLogo);`
+    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);`
 );
 
-// 5. Remove Account button from top menubar
+ppCode = ppCode.replace(
+  'b.KY(this.a1b);\n      for (var n = 0; n < this.jt.length; n++) {',
+  'b.KY(this.a1b);\n      if (this._osLogo) this.a1b.appendChild(this._osLogo);\n      for (var n = 0; n < this.jt.length; n++) {'
+);
+
+// 5. Remove Account button completely from top menubar & qv
 ppCode = ppCode.replace(
   'this.TH = new lN([0, 13, 0], false, null, true);',
-  'this.TH = new lN([0, 13, 0], false, null, true); this.TH.$.style.display = "none";'
+  'this.TH = new lN([0, 13, 0], false, null, true); this.TH.$.style.display = "none"; if (this.TH.$.parentNode) this.TH.$.parentNode.removeChild(this.TH.$);'
+);
+
+ppCode = ppCode.replace(
+  'if (y.h1) {\n        r.appendChild(this.TH.$);\n      }',
+  '/* Account button permanently excluded */'
 );
 
 // 6. Remove topfloat buttons (About, Issues, Learn, Blog, API, Twitter, Facebook, Reddit)
 ppCode = ppCode.replace(
   'for (var n = 0; n < this.xX.length; n++) {',
-  'for (var n = 0; false && n < this.xX.length; n++) {'
+  'this.qE.style.display = "none"; for (var n = 0; false && n < this.xX.length; n++) {'
 );
 
 // 7. Remove PeaMark & About from More menu
