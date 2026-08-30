@@ -1,0 +1,22 @@
+{
+  "name": "openshop-web",
+  "version": "1.0.0",
+  "description": "OpenShop - Advanced in-browser raster and vector graphics editor",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.mjs",
+    "serve": "npx serve ."
+  },
+  "keywords": [
+    "openshop",
+    "photo-editor",
+    "image-editor",
+    "psd-editor",
+    "vector-graphics",
+    "web-editor",
+    "canvas",
+    "webgl"
+  ],
+  "author": "OpenShop Contributors",
+  "license": "MIT"
+}

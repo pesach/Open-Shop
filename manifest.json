@@ -1,0 +1,16 @@
+{
+  "name": "OpenShop",
+  "short_name": "OpenShop",
+  "description": "Professional image editing in your browser. PSD, XCF, Sketch, and raster formats.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#202020",
+  "theme_color": "#202020",
+  "icons": [
+    {
+      "src": "promo/icon256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}
