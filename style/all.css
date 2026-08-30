@@ -38,6 +38,14 @@
 		font-size: 13px;
 	}
 
+	html, body {
+		overflow: hidden !important;
+		width: 100vw !important;
+		height: 100vh !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
 	body, button{
 		margin:0;
 		padding: 0;
@@ -48,8 +56,7 @@
 		-webkit-user-select: none;
 		
 		cursor: default;
-		overflow-x: hidden;
-		/*overflow: hidden;*/
+		overflow: hidden !important;
 	}
 	.photopea, .openshop, .open-shop, .app, body {
 		text-shadow:  0 var(--sh-dy) 0 var(--sh-clr);
@@ -1015,6 +1022,8 @@ input[type="checkbox"]:checked + label:before {  content: "\2713";  }
 		border-radius: 6px !important;
 		min-width : 3em;
 		min-height: 2em;
+		max-width: 95vw;
+		max-height: 92vh;
 		box-shadow: 0px 16px 48px rgba(0,0,0,0.75) !important;
 		overflow: hidden;
 	}
