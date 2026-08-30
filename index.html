@@ -17,43 +17,27 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 
 		<style>
-			.topfloat a {
-				text-decoration:none;
-				color:#ffffff;
-				padding:2px 6px 3px 6px;
-				border-radius: 0.3em;
-				display:inline-block;
-				white-space: nowrap;
+			#cap, .topfloat {
+				display: none !important;
 			}
-			#cap { 
-				font-size: 1.3em;
-				padding:1em 9em 1.8em 3em; background-color: #0f171d;
-				color:#e6e6e6; text-align:center;
-			}
-			#cap a { color:inherit; font-weight:bold; }
-			#cap p { margin-bottom:1.5em; line-height:1.5em; }
-			h1 { font-size: 2.5em; margin:0.7em 0; letter-spacing: 0em; }
-			strong { display:inline-block; font-size: 1.1em; background:rgba(0,0,0,0.1); padding:0.1em 0.5em; 
-					margin: 0.2em 0.5em 0.2em 0; border-radius:0.3em; font-weight:normal; line-height:1.7}
 		</style>
 		
 		<!-- Open-Shop Diagnostics & Error Logging Engine (Loaded early to catch all errors) -->
 		<script src="code/openshop-logger.js"></script>
 	</head>
 	<body>
+		<div id="cap" style="display:none;"></div>
 		<div class="topfloat" style="display:none;"></div>
 		<script>function showCap(){} function hideCap(){}</script>
 		
-		<!-- Core Engine Scripts -->
-		<script src="code/external/ext.js"></script>	
-		<script src="code/PIMG.js"></script>		
-		<script src="code/FNTS.js"></script>
-		<script src="code/LNG2.js"></script>
-		<script src="code/openshop.js"></script>
+		<!-- Core Engine Scripts (New Modern Engine) -->
+		<script src="code/external/ext.js?v=3"></script>	
+		<script src="code/dbs.js?v=3"></script>
+		<script src="code/openshop.js?v=3"></script>
 
 		<!-- Open-Shop Enhancements: Crash Recovery, Agent Automation API, and Memory Guard -->
-		<script src="code/openshop-recovery.js"></script>
-		<script src="code/openshop-agent.js"></script>
-		<script src="code/openshop-memory.js"></script>
+		<script src="code/openshop-recovery.js?v=3"></script>
+		<script src="code/openshop-agent.js?v=3"></script>
+		<script src="code/openshop-memory.js?v=3"></script>
 	</body>
 </html>
