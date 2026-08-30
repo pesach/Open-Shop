@@ -51,13 +51,44 @@
 		overflow-x: hidden;
 		/*overflow: hidden;*/
 	}
-	.openshop , button {
+	.photopea, .openshop, .open-shop, .app, body {
 		text-shadow:  0 var(--sh-dy) 0 var(--sh-clr);
+		background-color: var(--bg-canvas) !important;
+		color: var(--text-color) !important;
 	}
-	
-	.openshop {
-		background-color: var(--bg-color);
-		color: var(--text-color);
+
+	.topbar, div[style*="app-region:drag"], div[style*="app-region: drag"] {
+		background-color: var(--bg-panel) !important;
+		color: var(--text-color) !important;
+	}
+
+	.topbar button {
+		color: var(--text-color) !important;
+		background-color: transparent !important;
+	}
+
+	.topbar button:hover {
+		background-color: rgba(255, 255, 255, 0.1) !important;
+	}
+
+	/* Fix giant icons in panel heads and layer controls */
+	.miniscale, img.miniscale, svg.miniscale {
+		width: 18px !important;
+		height: 18px !important;
+		max-width: 18px !important;
+		max-height: 18px !important;
+		object-fit: contain;
+		vertical-align: middle;
+	}
+
+	/* Hide Account button & external top links */
+	button.bbtn[style*="#bb0000"],
+	button[style*="background-color:#bb0000"],
+	button[style*="background-color: rgb(187, 0, 0)"],
+	.topfloat,
+	#cap,
+	div[style*="float: right"] {
+		display: none !important;
 	}
 	
 	.intro {
