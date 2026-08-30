@@ -46,5 +46,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`OpenShop Web Editor running at http://localhost:${PORT}`);
+  console.log(`Open-Shop Editor running at http://localhost:${PORT}`);
 });

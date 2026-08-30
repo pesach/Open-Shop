@@ -1,24 +1,24 @@
-# OpenShop Web
+# Open-Shop
 
-> **OpenShop Web** is an open-source version of Photopea — an advanced in-browser photo and vector graphics editor supporting PSD, XCF, Sketch, and standard image formats with zero ads, zero telemetry, and 100% offline capability.
+> **Open-Shop** is an advanced in-browser photo and vector graphics editor supporting PSD, XCF, Sketch, and standard image formats with zero ads, zero telemetry, and 100% offline capability.
 
 <p align="center">
-  <img src="promo/logo.png" width="160" height="160" alt="OpenShop Web Logo">
+  <img src="promo/logo.png" width="160" height="160" alt="Open-Shop Logo">
 </p>
 
 ---
 
-## 📖 About OpenShop Web
+## 📖 About Open-Shop
 
-OpenShop Web provides a fully featured, Photoshop-compatible graphics editing environment directly inside modern web browsers. It eliminates third-party trackers, external advertising sidebars, and forced account paywalls to deliver a clean, fast, full-width creative workspace.
+Open-Shop provides a fully featured, layer-based graphics editing environment directly inside modern web browsers. It eliminates third-party trackers, external advertising sidebars, and forced account paywalls to deliver a clean, fast, full-width creative workspace.
 
 ---
 
-## 🚀 How to Use OpenShop Web
+## 🚀 How to Use Open-Shop
 
 ### 1. Running the Editor
 
-OpenShop is 100% client-side and requires no build step.
+Open-Shop is 100% client-side and requires no build step.
 
 #### Quick Run with Node.js
 ```bash
@@ -76,11 +76,11 @@ You can also host this directly on GitHub Pages, Cloudflare Pages, Netlify, Verc
 
 ## 🛠️ Technology Stack & Architecture
 
-OpenShop Web runs entirely on standard web standards without heavyweight frontend frameworks or proprietary native plugins.
+Open-Shop runs entirely on standard web standards without heavyweight frontend frameworks or proprietary native plugins.
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│                    OpenShop Web Shell                      │
+│                      Open-Shop Shell                       │
 │        (DOM Tree, Workspace Panels, Modal Dialogs)         │
 ├─────────────────────────────┬──────────────────────────────┤
 │       2D Canvas Engine      │      WebGL Shader Engine     │
@@ -93,7 +93,7 @@ OpenShop Web runs entirely on standard web standards without heavyweight fronten
 │  - Web Workers (Background parsing & async rendering)      │
 ├────────────────────────────────────────────────────────────┤
 │                    Format Parsers & Codecs                 │
-│  - PSD/PSB Parser & Serializer (Photoshop Engine)          │
+│  - PSD/PSB Parser & Serializer (Layer & Mask Engine)       │
 │  - UZIP (High-performance DEFLATE compression engine)      │
 │  - UPNG (Optimized APNG / PNG encoder & decoder)           │
 │  - UTIF (TIFF and RAW digital camera decoding)             │
@@ -128,4 +128,4 @@ OpenShop Web runs entirely on standard web standards without heavyweight fronten
 
 ## 📄 License
 
-OpenShop Web is licensed under the MIT License.
+Open-Shop is licensed under the MIT License.
