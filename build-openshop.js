@@ -129,7 +129,18 @@ ppCode = ppCode.replace(
   ''
 );
 
-// 9. General Branding string cleanup
+// 9. Enforce Open-Shop logo on Home screen and dialogs
+ppCode = ppCode.replace(
+  'v.setAttribute("src", PIMG[n == 0 ? "logo" : "bottom"]);',
+  'v.setAttribute("src", n == 0 ? "promo/logo.svg" : PIMG.bottom);'
+);
+
+ppCode = ppCode.replace(
+  'this.aBW.setAttribute("src", PIMG[r]);',
+  'this.aBW.setAttribute("src", "promo/logo.svg"); this.aBW.style.maxWidth = "240px"; this.aBW.style.height = "auto";'
+);
+
+// 10. General Branding string cleanup
 ppCode = ppCode.replaceAll('Photopea', 'Open-Shop');
 ppCode = ppCode.replaceAll('photopea', 'open-shop');
 ppCode = ppCode.replaceAll('Vectorpea', 'Open-Shop');

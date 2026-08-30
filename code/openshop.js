@@ -144870,7 +144870,7 @@
       if (n == 0 || d7 < 2) {
         P.appendChild(v);
       }
-      v.setAttribute("src", PIMG[n == 0 ? "logo" : "bottom"]);
+      v.setAttribute("src", n == 0 ? "promo/logo.svg" : PIMG.bottom);
       b.v(v, D);
       if (n == 0) {
         this.aBW = v;
@@ -145044,7 +145044,7 @@
       t += ": MIDI / Guitar Pro / Musescore / MusicXML / SoundFonts";
     }
     this.aEu.textContent = t;
-    this.aBW.setAttribute("src", PIMG[r]);
+    this.aBW.setAttribute("src", "promo/logo.svg"); this.aBW.style.maxWidth = "240px"; this.aBW.style.height = "auto";
     this.aoK.setAttribute("src", PIMG.bottom);
     var j = this.o;
     if (j) {
