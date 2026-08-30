@@ -22,8 +22,8 @@ OpenShop is 100% client-side and requires no build step.
 
 #### Quick Run with Node.js
 ```bash
-git clone https://github.com/pesach/openshop-web.git
-cd openshop-web
+git clone https://github.com/pesach/Open-Shop.git
+cd Open-Shop
 npm start
 ```
 Then open [http://localhost:8888](http://localhost:8888) in your browser.
