@@ -1,6 +1,6 @@
 {
-  "name": "OpenShop",
-  "short_name": "OpenShop",
+  "name": "Open-Shop",
+  "short_name": "Open-Shop",
   "description": "Professional image editing in your browser. PSD, XCF, Sketch, and raster formats.",
   "start_url": "index.html",
   "display": "standalone",
