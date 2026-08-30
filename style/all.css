@@ -1,5 +1,26 @@
 
 
+:root {
+	--base: #474747;
+	--bg-panel: #383838;
+	--bg-canvas: #282828;
+	--bg-color: #383838;
+	--bg-input: #242424;
+	--bg-bbtn: #5d5d5d;
+	--bg-bbtnOver: #6a6a6a;
+	--brdr: #222222;
+	--text-color: #dcdcdc;
+	--brdrLgt: rgba(255, 255, 255, 0.15);
+	--brdrDrk: rgba(0, 0, 0, 0.6);
+	--alphaDark: 0.25;
+	--gs-invert: 0.78;
+	--accent: #2563eb;
+	--sh-clr: rgba(0, 0, 0, 0.45);
+	--img20: 20px;
+	--img18: 18px;
+	--img15: 15px;
+}
+
 	*{
 		border-style: solid;
 		border-width: 0;
@@ -22,7 +43,7 @@
 	}
 	
 	.gsicon {  
-		filter: invert(  var(--gs-invert)  )  drop-shadow(0 var(--sh-dy) 0 var(--sh-clr));
+		filter: invert( var(--gs-invert) ) drop-shadow(0 var(--sh-dy) 0 var(--sh-clr));
 		-webkit-user-drag: none;
 		user-drag: none;
 		-moz-user-drag: none;
@@ -44,29 +65,30 @@
 		height: 100vh !important;
 		margin: 0 !important;
 		padding: 0 !important;
+		background-color: var(--bg-canvas);
 	}
 
 	body, button{
 		margin:0;
 		padding: 0;
 		background-color: var(--bg-color);
-		
 		user-select: none;
 		-moz-user-select: none;
 		-webkit-user-select: none;
-		
 		cursor: default;
 		overflow: hidden !important;
 	}
-	.photopea, .openshop, .open-shop, .app, body {
-		text-shadow:  0 var(--sh-dy) 0 var(--sh-clr);
-		background-color: var(--bg-canvas) !important;
-		color: var(--text-color) !important;
+
+	.photopea, .openshop, .open-shop, .app {
+		text-shadow: 0 var(--sh-dy) 0 var(--sh-clr);
+		background-color: var(--bg-canvas);
+		color: var(--text-color);
 	}
 
 	.topbar, div[style*="app-region:drag"], div[style*="app-region: drag"] {
-		background-color: var(--bg-panel) !important;
+		background-color: #242424 !important;
 		color: var(--text-color) !important;
+		border-bottom: 1px solid #1a1a1a;
 	}
 
 	.topbar button {
@@ -211,8 +233,8 @@
 	}
 	
 	.toolbar{
-		border-right-width:1px;
-		background-color: var(--bg-panel);
+		border-right: 1px solid #1a1a1a !important;
+		background-color: #242424 !important;
 	}
 	.toolbar > .top {
 		display: none !important;
@@ -226,6 +248,7 @@
 		display: inline-flex;
 		flex-flow: column wrap;
 		align-items: center;
+		background-color: #242424 !important;
 	}
 	
 	.toolbar .tools .toolbtn {
@@ -234,9 +257,9 @@
 		padding:4px 4px;
 		transition: background-color 0.1s ease;
 	}
-	.toolbar .tools button {  position:relative;  }
+	.toolbar .tools button { position:relative; }
 	.toolbar .tools .toolbtn:hover {
-		background-color: rgba(255, 255, 255, 0.08);
+		background-color: rgba(255, 255, 255, 0.1);
 	}
 	.toolbar .tools .toolbtn.selected,
 	.toolbar .tools button.selected {
@@ -268,42 +291,39 @@
 		border-width: 1px;
 		border-radius: 4px;
 		font-size: 12px;
-		background-color:var(--bg-color);
+		background-color: #242424;
 		overflow:hidden;
 	}
-	
-	
 	
 	.rightbar {
 		display:flex; 
 		flex-flow: row;
+		background-color: #383838 !important;
 	}
 	.rightbar .block{
-		/*min-width: 18em;*/
+		background-color: #383838 !important;
 	}
 	.rightbar .collapsed{
 		width:3em;
+		background-color: #242424 !important;
 	}
 	.rightbar .collapsed button {
 		display: block;
 		margin:0.3em;
 	}
 	
-	.rightbar .float
-	{
-		position:absolute;
-		right: 105%;
-		/*border-width: 1px;*/
-		box-shadow: 0px 8px 40px rgba(0,0,0,0.35);
-		background-color: var(--bg-color);
+	.sbar {
+		border-left: 1px solid #1a1a1a !important;
+		background-color: #242424 !important;
+		position: relative;
 	}
-	
+
 	.mainblock
 	{
-		background-color: var(--bg-canvas);
+		background-color: #282828 !important;
 		border-bottom-width:0 !important;
 	}
-	.mainblock canvas {  display:block;  }
+	.mainblock canvas { display:block; }
 	
 	.alertcont
 	{
@@ -314,53 +334,17 @@
 		z-index: 10;
 	}
 	
-	.alertpanel
-	{
-		font-size: 1.4em;
-		margin-top:1em;
-		background-color:#ffffff;
-		color: #000000;
-		padding:0.4em;
-		border-radius:0.5em;
-		text-align:center;
-		text-shadow:none;
-		box-shadow: rgba(0,0,0,0.5) 0 0 1em;
-	}
-	.tpanel {  /*  temporary panel  */
-		transition: all 0.2s cubic-bezier(0.240, 0.575, 0.665, 1.565);
-		transform: scale(0.6);
-		opacity:0;
-	}
-	
-	.topfloat
-	{
-		position:absolute;
-		right: 0;
-		padding: 3px;
-		text-align:right;
-	}
-	.topfloat * { margin-left:auto; margin-right:0; }
-	
-	
-	
-	
 	.panelblock
 	{
-		/*border-top-width:1px;*/
-		border-bottom-width:1px;
-		border-bottom-color: var(--bg-panel);
-	}
-	
-	.highlight 
-	{
-		box-shadow: inset 0 0 10px #33aaff  !important;
+		border-bottom: 1px solid #1a1a1a;
+		background-color: #383838 !important;
 	}
 	
 	.block .panelhead
 	{
-		background-color: var(--bg-panel);
+		background-color: #242424 !important;
 		padding: 3px 4px 0 4px;
-		border-bottom: 1px solid var(--brdr);
+		border-bottom: 1px solid #1a1a1a !important;
 		display: flex;
 		align-items: flex-end;
 	}
@@ -372,28 +356,29 @@
 		padding: 3px 10px 4px 10px;
 		display: inline-flex;
 		align-items: center;
-		border-radius: 5px 5px 0 0;
-		margin-right: 3px;
-		background-color: rgba(0, 0, 0, 0.18);
+		border-radius: 4px 4px 0 0;
+		margin-right: 2px;
+		background-color: #242424 !important;
 		border: 1px solid transparent;
 		border-bottom: none;
-		color: var(--text-color);
+		color: #b0b0b0 !important;
 		cursor: pointer;
-		transition: background-color 0.12s ease;
+		transition: background-color 0.12s ease, color 0.12s ease;
 	}
 
 	.block .panelhead div:hover
 	{
-		background-color: rgba(255, 255, 255, 0.06);
+		background-color: rgba(255, 255, 255, 0.08) !important;
+		color: #ffffff !important;
 	}
 	
 	.block .panelhead .active
 	{
-		background-color: var(--bg-canvas) !important;
-		color: #ffffff;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-bottom: 1px solid var(--bg-canvas) !important;
-		box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.25);
+		background-color: #383838 !important;
+		color: #ffffff !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border-bottom: 1px solid #383838 !important;
+		box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.35);
 	}
 	
 	.block .panelhead div .cross
@@ -1037,6 +1022,19 @@ input[type="checkbox"]:checked + label:before {  content: "\2713";  }
 		margin:0.5em 0;
 	}
 	
+	.window .body {
+		background-color: #2e2e2e !important;
+		padding: 8px;
+		color: #e0e0e0;
+	}
+
+	.window .form, .newproject .form {
+		background-color: #262626 !important;
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		border-radius: 4px;
+		padding: 8px 12px;
+	}
+
 	.window .head
 	{
 		font-size: 1.15em;
