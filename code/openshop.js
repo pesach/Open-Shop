@@ -143936,7 +143936,7 @@
   };
   aY.prototype.a0$ = function (y) {
     var P = JSON.parse(y.target.response);
-    var D = this.D1 = P.hits;
+    var D = this.D1 = (P && P.hits) ? P.hits : [];
     for (var n = 0; n < D.length; n++) {
       if (D[n].user_id == 6314823) {
         D.splice(n, 1);

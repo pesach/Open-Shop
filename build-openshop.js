@@ -151,7 +151,13 @@ ppCode = ppCode.replaceAll('//www.open-shop.com/plugins/gallery.json', 'plugins/
 ppCode = ppCode.replaceAll('//www.photopea.com/plugins/gallery.json', 'plugins/gallery.json');
 ppCode = ppCode.replaceAll('//www.vecpea.com/plugins/gallery.json', 'plugins/gallery.json');
 
-// 12. Assign window.app
+// 12. Safe template hits handler (prevents TypeError on empty hits)
+ppCode = ppCode.replace(
+  'var D = this.D1 = P.hits;\n    for (var n = 0; n < D.length; n++) {',
+  'var D = this.D1 = (P && P.hits) ? P.hits : [];\n    for (var n = 0; n < D.length; n++) {'
+);
+
+// 13. Assign window.app
 ppCode = ppCode.replace(
   'document.body.appendChild(new dj().$);',
   'window.app = new dj(); document.body.appendChild(window.app.$);'
