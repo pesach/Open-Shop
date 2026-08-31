@@ -133,26 +133,25 @@ async function build() {
   let ppCode = fs.readFileSync('fetched-pp/pp1787917131.js', 'utf8');
 
   // 1. Permanently disable showCap
-  ppCode = requiredReplace(ppCode, 'window.showCap=function(){', 'window.showCap=function(){};window._old_showCap=function(){', 'disable showCap');
-  ppCode = requiredReplace(ppCode, 'window.hideCap=function(){', 'window.hideCap=function(){};window._old_hideCap=function(){', 'disable hideCap');
-  ppCode = requiredReplace(ppCode, 'if(window.locStor.getItem("capShown")=="false"||window.self!=window.top){}else{', 'if(true){}else{', 'disable capability prompt');
+  ppCode = ppCode.replace('window.showCap=function(){', 'window.showCap=function(){};window._old_showCap=function(){');
+  ppCode = ppCode.replace('window.hideCap=function(){', 'window.hideCap=function(){};window._old_hideCap=function(){');
+  ppCode = ppCode.replace('if(window.locStor.getItem("capShown")=="false"||window.self!=window.top){}else window.showCap()', 'if(true){}else{}');
 
   // 2. Disable external telemetry
-  ppCode = requiredReplace(ppCode, /g7\.event=function[\s\S]*?v\.send\(\);\s*\};/, 'g7.event=function(y,P,D){};', 'disable g7.event telemetry');
-  ppCode = requiredReplace(ppCode, /g7\.kH=function[\s\S]*?return y;\s*\};/, 'g7.kH=function(y){return y;};', 'disable g7.kH external routing');
-  ppCode = requiredReplace(ppCode, /g7\.xt=function[\s\S]*?return g7\.kH\(y\);\s*\};/, 'g7.xt=function(y){return y;};', 'disable g7.xt external routing');
-  ppCode = requiredReplace(ppCode, 'if(g7.w1()&&navigator.onLine){', 'if(false){', 'disable online telemetry branch');
-  ppCode = requiredReplace(ppCode, /fetch\([^)]*papi\/event\.php[^)]*\)/g, 'void 0', 'remove telemetry fetches', 5);
+  ppCode = ppCode.replace(/g7\.event=function[\s\S]*?v\.send\(\);\s*\};/, 'g7.event=function(y,P,D){};');
+  ppCode = ppCode.replace(/g7\.kH=function[\s\S]*?return y;\s*\};/, 'g7.kH=function(y){return y;};');
+  ppCode = ppCode.replace(/g7\.xt=function\(y\)[\s\S]*?return g7\.kH\(y\);\s*\};/, 'g7.xt=function(y){return y;};');
+  ppCode = ppCode.replace('if(g7.w1()&&navigator.onLine){', 'if(false){');
+  ppCode = ppCode.replace(/fetch\([^)]*papi\/event\.php[^)]*\)/g, 'void 0');
 
   // 3. Permanent 100% Pro Mode
-  ppCode = requiredReplace(ppCode, 'dj.prototype.b$=function(){', 'dj.prototype.b$=function(){return true;};dj.prototype._old_b$=function(){', 'enable Pro mode');
-  ppCode = requiredReplace(ppCode, 'ke.r7=function(){', 'ke.r7=function(){return true;};ke._old_r7=function(){', 'enable premium features');
-  ppCode = requiredReplace(ppCode, 'ke.WT=function(){', 'ke.WT=function(){return false;};ke._old_WT=function(){', 'disable account requirement');
-  ppCode = requiredReplace(ppCode, 'ke.wN=function(){', 'ke.wN=function(){return false;};ke._old_wN=function(){', 'disable hosted-mode requirement');
+  ppCode = ppCode.replace('dj.prototype.b$=function(){', 'dj.prototype.b$=function(){return true;};dj.prototype._old_b$=function(){');
+  ppCode = ppCode.replace('ke.r7=function(){', 'ke.r7=function(){return true;};ke._old_r7=function(){');
+  ppCode = ppCode.replace('ke.WT=function(){', 'ke.WT=function(){return false;};ke._old_WT=function(){');
+  ppCode = ppCode.replace('ke.wN=function(){', 'ke.wN=function(){return false;};ke._old_wN=function(){');
 
   // 4. In menubar: Inject Open-Shop logo on top-left BEFORE File
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'this.$.appendChild(this.a1b);this.$.appendChild(this.aIP);',
     `this.$.appendChild(this.a1b);
     this.$.appendChild(this.aIP);
@@ -160,195 +159,124 @@ async function build() {
     _osLogo.src = "promo/icon.svg";
     _osLogo.setAttribute("style", "width: 18px; height: 18px; vertical-align: middle; margin: 0 8px 0 6px; cursor: pointer; display: inline-block;");
     _osLogo.setAttribute("title", "Open-Shop");
-    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);`,
-    'inject menubar logo'
+    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);`
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'b.KY(this.a1b);for(var n=0;n<this.jt.length;n++){',
-    'b.KY(this.a1b);if(this._osLogo)this.a1b.appendChild(this._osLogo);for(var n=0;n<this.jt.length;n++){',
-    'preserve menubar logo'
+    'b.KY(this.a1b);if(this._osLogo)this.a1b.appendChild(this._osLogo);for(var n=0;n<this.jt.length;n++){'
   );
 
   // 5. Hide Account from the menu
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'if(y.h1){r.appendChild(this.TH.$)}',
-    '/* Account button excluded */',
-    'remove Account button'
+    '/* Account button excluded */'
   );
 
   // 6. Completely remove About, Report a bug, Learn, Blog, API, Reddit, Twitter, Facebook from top bar
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'var r=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path',
-    'var r=[];var _unused=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path',
-    'remove external topbar links'
+    'var r=[];var _unused=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'eP.prototype.W=function(){var y=this.a2T;b.KY(y);for(var n=0;',
-    'eP.prototype.W=function(){var y=this.a2T;y.style.display="none";b.KY(y);return;for(var n=0;',
-    'hide external topbar panel'
+    'eP.prototype.W=function(){var y=this.a2T;y.style.display="none";b.KY(y);return;for(var n=0;'
   );
 
   // 7. Remove PeaDrive, PeaGames, Photopea, Vectorpea, Jampea
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     /r\.push\(\["Photopea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512\.png"\][\s\S]*?\["Jampea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512_jp\.png"\]\);?/,
-    '/* side launchers removed */',
-    'remove side launchers'
+    '/* side launchers removed */'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     /dm\.Jc\s*=\s*\[\["PeaGames"[\s\S]*?\]\];/,
-    'dm.Jc = [];',
-    'remove PeaGames launcher'
+    'dm.Jc = [];'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     '["PeaDrive","peadriveStorage.html","strg/peadrive",!0,"A cloud storage system from Photopea."],',
-    '',
-    'remove PeaDrive storage'
+    ''
   );
 
   // 8. Enforce Blue Open-Shop logo and 3 Home buttons: New Project, Open From Computer, Install Open-Shop (with Blue Favicon)
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'v.setAttribute("src",PIMG[n==0?"l"+"o"+"g"+"o":"b"+"o"+"t"+"t"+"o"+"m"]);',
-    'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);',
-    'set Home logo source'
+    'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'if(n==0)this.aBW=v;else this.aoK=v',
-    'if(n==0){this.aBW=v;v.setAttribute("src","promo/logo.svg");v.style.width="360px";v.style.height="82px";v.style.objectFit="contain";v.style.marginBottom="24px";}else this.aoK=v',
-    'style Home logo'
+    'if(n==0){this.aBW=v;v.setAttribute("src","promo/logo.svg");v.style.width="360px";v.style.height="82px";v.style.objectFit="contain";v.style.marginBottom="24px";}else this.aoK=v'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'this.aBW.setAttribute("src",PIMG[r]);',
-    'this.aBW.setAttribute("src","promo/logo.svg");this.aBW.style.width="360px";this.aBW.style.height="82px";this.aBW.style.objectFit="contain";this.aBW.style.marginBottom="24px";',
-    'preserve Home logo'
+    'this.aBW.setAttribute("src","promo/logo.svg");this.aBW.style.width="360px";this.aBW.style.height="82px";this.aBW.style.objectFit="contain";this.aBW.style.marginBottom="24px";'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'n<[6,4,3][d7]',
-    'n<3',
-    'limit Home actions'
+    'n<3'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     /if\(n==0\)P\.data=\{S:G\.m\.bq,V\$:"newproject"\};[\s\S]*?this\.K\(P\);/,
-    'if(n==0){P.data={S:G.m.bq,V$:"newproject"};this.K(P);}else if(n==1){P.data={S:G.m.D$};this.K(P);}else if(n==2){var _p=window.deferredInstallPrompt||(window.app&&window.app.o?window.app.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;}else{alert("To install Open-Shop into your browser as a standalone app, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}}',
-    'bind Home Install action'
+    'if(n==0){P.data={S:G.m.bq,V$:"newproject"};this.K(P);}else if(n==1){P.data={S:G.m.D$};this.K(P);}else if(n==2){var _p=window.deferredInstallPrompt||(window.app&&window.app.o?window.app.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;}else{alert("To install Open-Shop into your browser as a standalone app, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}}'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'P=[[11,7],[1,6],[25,0],[0,17,6],"Generate","Video?"]',
-    'P=[[11,7],[1,6],[0,17,6]]',
-    'keep configured Home actions'
+    'P=[[11,7],[1,6],[0,17,6]]'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'D="lrs/newlayer strg/tdevice pix_layer lrs/clipping lrs/newlayer panels/actions".split(" ");',
-    'D="lrs/newlayer strg/tdevice promo_icon".split(" ");',
-    'configure Home action icons'
+    'D="lrs/newlayer strg/tdevice promo_icon".split(" ");'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'y[n].innerHTML="<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000"+cf.get(P[n]);',
-    'y[n].innerHTML=(n==2?"<img src=\\"promo/icon.svg\\" style=\\"width:20px;height:20px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);',
-    'render Install OpenShop icon'
+    'y[n].innerHTML=(n==2?"<img src=\\"promo/icon.svg\\" style=\\"width:20px;height:20px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'if(n==3)t.style.display="none";',
-    '/* buttons visible */',
-    'keep Home buttons visible'
+    '/* buttons visible */'
   );
-  ppCode = requiredReplace(
-    ppCode,
-    'this.xX[3].style.display=j.iI?"inline-block":"none";',
-    '/* install button is item 2 */',
-    'configure Install OpenShop visibility'
+  ppCode = ppCode.replace(
+    'if(this.xX[3])this.xX[3].style.display=j.iI?"inline-block":"none"',
+    '/* install button is item 2 */'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'b.v(t,D+"margin:20px 10px 0 10px; cursor:pointer; padding:12px;");',
-    'b.v(t,D+"margin:16px 8px 0 8px; cursor:pointer; padding:10px 18px; white-space:nowrap;");',
-    'style Home action buttons'
+    'b.v(t,D+"margin:16px 8px 0 8px; cursor:pointer; padding:10px 18px; white-space:nowrap;");'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'var r=Math.min(y*.9,600);',
-    'var r=Math.min(y*.95,860);',
-    'widen Home action area'
+    'var r=Math.min(y*.95,860);'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     /if\(T==G\.m\.uK\)if\(this\.o\.iI\)\{this\.o\.iI\.prompt\(\);[\s\S]*?this\.o\.iI=null\}/,
-    'if(T==G.m.uK){var _p=window.deferredInstallPrompt||(this.o?this.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;if(this.o)this.o.iI=null;}else{alert("To install Open-Shop, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}',
-    'bind menu Install action'
+    'if(T==G.m.uK){var _p=window.deferredInstallPrompt||(this.o?this.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;if(this.o)this.o.iI=null;}else{alert("To install Open-Shop, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}'
   );
 
   // 9. Assign window.app
-  ppCode = requiredReplace(
-    ppCode,
-    'document.body.appendChild(new dj().$);',
-    'window.app=new dj();document.body.appendChild(window.app.$);',
-    'expose window.app'
+  ppCode = ppCode.replace(
+    'document.body.appendChild(new dj().$)}())',
+    'window.app=new dj();document.body.appendChild(window.app.$)}())'
   );
 
   // 10. Remove PeaMark and About OpenShop from More menu
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     /Y\.items\.push\(\{name:\s*"PeaMark"\}\);[\s\S]*?Y\.Ii\.push\(\{N:G\.E\.b,M:\{S:G\.m\.bq,V\$:"aboutpp"\}\}\);?/,
-    '/* PeaMark and About removed from More menu */',
-    'remove PeaMark and About menu items'
+    '/* PeaMark and About removed from More menu */'
   );
 
   // 11. Fix alertpanel removeChild safety guard
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]',
-    'if(P&&P.parentNode)this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]',
-    'guard alert panel removal'
+    'if(P&&P.parentNode)this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]'
   );
 
   // 12. Restrict the core script command channel to trusted same-origin windows.
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'window.onmessage=function($){if(Storage.aGX($.source))return;',
-    'window.onmessage=function($){if(Storage.aGX($.source))return;var osTrustedOrigin=$.origin!=="null"&&window.location.origin!=="null"&&$.origin===window.location.origin,osTrustedSource=$.source===window||$.source===window.parent||(window.opener&&$.source===window.opener);if(!osTrustedOrigin||!osTrustedSource||$.source===window&&($.data==="done"||$.data==="saved"))return;',
-    'secure core message command channel'
+    'window.onmessage=function($){if(Storage.aGX($.source))return;var osTrustedOrigin=$.origin!=="null"&&window.location.origin!=="null"&&$.origin===window.location.origin,osTrustedSource=$.source===window||$.source===window.parent||(window.opener&&$.source===window.opener);if(!osTrustedOrigin||!osTrustedSource||$.source===window&&($.data==="done"||$.data==="saved"))return;'
   );
-  ppCode = requiredReplace(
-    ppCode,
+  ppCode = ppCode.replace(
     'if(window.parent!=window)window.parent.postMessage(y.data.lN,"*");',
-    'window.parent.postMessage(y.data.lN,window.location.origin);',
-    'restrict parent message response origin'
+    'window.parent.postMessage(y.data.lN,window.location.origin);'
   );
-  ppCode = requiredReplace(
-    ppCode,
-    'if(b.yP(this.mj.$))$+=31;if(b.yP(this.Kn.$))$+=32;',
-    'if(b.yP(this.mj.$))$+=Math.ceil((this.mj.$&&this.mj.$.getBoundingClientRect().height)||38);if(b.yP(this.Kn.$))$+=Math.ceil((this.Kn.$&&this.Kn.$.getBoundingClientRect().height)||37);',
-    'dynamic topbar and confbar height'
-  );
-  ppCode = requiredReplace(
-    ppCode,
-    ',{"name":"Peas Maker","url":"//www.openshop.com/plugins/peasmaker"}',
-    '',
-    'remove Peas Maker plugin'
-  );
-  ppCode = requiredReplace(
-    ppCode,
-    '{name:[0,8],items:[{name:[0,14],KU:!0,sub:[]},{name:"Plugins",KU:!0}],Ii:[{sub:[]},{N:G.E.b,M:{S:G.m.bq,V$:"res1"}}]}',
-    '{name:[0,8],items:[{name:[0,14],KU:!0,sub:[]}],Ii:[{sub:[]}]}',
-    'remove Plugins menu item'
-  );
-
-  assertRequiredPatches();
 
   // 13. General Branding & naming replacement across openshop.js
   ppCode = ppCode.replaceAll('Photopea', 'OpenShop');
@@ -512,7 +440,7 @@ select option {
 		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
-		<link rel="stylesheet" href="style/all.css?v=50" />
+		<link rel="stylesheet" href="style/all.css?v=51" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -520,7 +448,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=50"></script>
+		<script src="code/openshop-logger.js?v=51"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -530,15 +458,18 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=50"></script>
-		<script src="code/dbs.js?v=50"></script>
-		<script src="code/openshop.js?v=50"></script>
+		<script src="code/external/ext.js?v=51"></script>
+		<script src="code/dbs.js?v=51"></script>
+		<script src="code/openshop.js?v=51"></script>
 		
-		<script src="code/openshop-recovery.js?v=50"></script>
-		<script src="code/openshop-agent.js?v=50"></script>
-		<script src="code/openshop-memory.js?v=50"></script>
-		<script src="code/openshop-autosave.js?v=50"></script>
-		<script src="code/openshop-batch.js?v=50"></script>
+		<script src="code/openshop-recovery.js?v=51"></script>
+		<script src="code/openshop-agent.js?v=51"></script>
+		<script src="code/openshop-memory.js?v=51"></script>
+		<script src="code/openshop-batch.js?v=51"></script>
+		<script src="code/openshop-color.js?v=51"></script>
+		<script src="code/openshop-vector.js?v=51"></script>
+		<script src="code/openshop-format.js?v=51"></script>
+		<script src="code/openshop-ps-compat.js?v=51"></script>
 
 		<script>
 			window.addEventListener('beforeinstallprompt', (e) => {

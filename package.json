@@ -8,7 +8,9 @@
     "start": "node server.mjs",
     "dev": "node server.mjs",
     "build": "node build-openshop.js",
-    "test": "node tests/regression.mjs && node --check code/openshop.js && node --check code/dbs.js && node --check code/external/ext.js",
+    "test": "node tests/regression.mjs && node --check code/openshop.js && node --check code/dbs.js && node --check code/external/ext.js && node --check code/openshop-color.js && node --check code/openshop-vector.js && node --check code/openshop-format.js && node --check code/openshop-ps-compat.js",
+    "test:fuzz": "node tools/fuzz-test.mjs",
+    "corpus:gen": "node tools/corpus-gen.mjs",
     "cli": "node bin/openshop-cli.mjs"
   },
   "keywords": [
@@ -19,7 +21,11 @@
     "vector-graphics",
     "web-editor",
     "canvas",
-    "webgl"
+    "webgl",
+    "extendscript",
+    "icc-color",
+    "cmyk",
+    "vector-boolean"
   ],
   "author": "Open-Shop Contributors",
   "license": "MIT"

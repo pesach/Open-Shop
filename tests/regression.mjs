@@ -1,13 +1,14 @@
 /**
  * Open-Shop Automated Regression & Platform Test Suite (tests/regression.mjs)
- * Executes asset integrity checks, server REST API checks, and Headless Agent
- * inspection checks against this checkout.
+ * Executes asset integrity checks, server REST API checks, Headless Agent
+ * operations, Photoshop Scripting DOM, Color Management, Vector Boolean, and Fuzzing.
  */
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { OpenShopNodeAPI, openshop } from '../api/openshop-node.mjs';
+import { OpenShopNodeAPI, openshop, formatEngine, colorEngine, vectorEngine, psCompat } from '../api/openshop-node.mjs';
+import { runFuzzSuite } from '../tools/fuzz-test.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -85,6 +86,12 @@ async function run() {
     'code/openshop-agent.js',
     'code/openshop-memory.js',
     'code/openshop-batch.js',
+    'code/openshop-color.js',
+    'code/openshop-vector.js',
+    'code/openshop-format.js',
+    'code/openshop-ps-compat.js',
+    'tools/corpus-gen.mjs',
+    'tools/fuzz-test.mjs',
     'api/openshop-node.mjs',
     'bin/openshop-cli.mjs',
     'promo/icon.svg',
@@ -137,6 +144,83 @@ async function run() {
     assert(inspectRes.channels === 3 || inspectRes.channels === 4, `Channels parsed: ${inspectRes.channels}`);
   } catch (err) {
     assert(false, `Inspect API failed: ${err.message}`);
+  }
+
+  // Test Suite 5: Color Management Engine
+  console.log('\n🌈 5. Color Profiles & Space Transforms:');
+  try {
+    const rgb = { r: 255, g: 128, b: 0 };
+    const lab = colorEngine.rgbToLab(rgb.r, rgb.g, rgb.b);
+    const roundtripRGB = colorEngine.labToRGB(lab.L, lab.a, lab.b);
+    assert(Math.abs(rgb.r - roundtripRGB.r) <= 2, 'RGB <-> CIELAB roundtrip accuracy within delta tolerance');
+
+    const cmyk = colorEngine.rgbToCMYK(rgb.r, rgb.g, rgb.b);
+    assert(cmyk.c === 0 && cmyk.m === 50 && cmyk.y === 100 && cmyk.k === 0, 'RGB to CMYK orange translation is accurate');
+
+    const deltaE = colorEngine.deltaE76(lab, colorEngine.rgbToLab(255, 130, 0));
+    assert(deltaE < 2.0, `Delta-E 76 color difference accurately calculated (${deltaE.toFixed(2)})`);
+  } catch (err) {
+    assert(false, `Color engine failed: ${err.message}`);
+  }
+
+  // Test Suite 6: Vector & Path Boolean Engine
+  console.log('\n📐 6. Vector & Path Boolean Operations:');
+  try {
+    const pathA = [[0, 0], [100, 0], [100, 100], [0, 100]];
+    const pathB = [[50, 50], [150, 50], [150, 150], [50, 150]];
+    
+    const unionRes = vectorEngine.combinePaths(pathA, pathB, 'union');
+    assert(unionRes.bounds.width === 150 && unionRes.bounds.height === 150, 'Path Union bounds correctly calculated to 150x150');
+
+    const simplified = vectorEngine.simplifyPath([[0, 0], [10, 0.1], [20, -0.1], [100, 0]], 1.0);
+    assert(simplified.length === 2, 'Bézier path collinear simplification reduces points from 4 to 2');
+  } catch (err) {
+    assert(false, `Vector engine failed: ${err.message}`);
+  }
+
+  // Test Suite 7: Native .openshop Container Format
+  console.log('\n📦 7. Native .openshop Project Format:');
+  try {
+    const docState = {
+      width: 1920,
+      height: 1080,
+      colorSpace: 'sRGB',
+      layers: [
+        { name: 'Layer 1', opacity: 80, blendMode: 'multiply' },
+        { name: 'Layer 2', opacity: 100, blendMode: 'normal' }
+      ]
+    };
+    const encoded = formatEngine.encode(docState);
+    assert(encoded.includes('"magic": "OPENSHOP"'), 'Encoded .openshop contains OPENSHOP magic signature');
+    
+    const decoded = formatEngine.decode(encoded);
+    assert(decoded.width === 1920 && decoded.layers.length === 2, 'Decoded .openshop preserves dimensions and layers');
+  } catch (err) {
+    assert(false, `Format engine failed: ${err.message}`);
+  }
+
+  // Test Suite 8: Photoshop ExtendScript Compatibility Bridge
+  console.log('\n📜 8. Photoshop ExtendScript Compatibility:');
+  try {
+    const scriptResult = openshop.evalPhotoshopScript(`
+      doc.resizeImage(1280, 720);
+      const layer = doc.activeLayer;
+      layer.name = "Hero Banner";
+      layer.adjustBrightnessContrast(10, 5);
+      return doc.width + "x" + doc.height + " - " + layer.name;
+    `);
+    assert(scriptResult === '1280x720 - Hero Banner', `ExtendScript execution succeeded: ${scriptResult}`);
+  } catch (err) {
+    assert(false, `Photoshop ExtendScript bridge failed: ${err.message}`);
+  }
+
+  // Test Suite 9: Fuzz & Resilience Testing
+  console.log('\n🛡️ 9. Fuzzing & Resilience Validation:');
+  try {
+    const fuzzRes = await runFuzzSuite();
+    assert(fuzzRes.passed === fuzzRes.total, `All ${fuzzRes.passed}/${fuzzRes.total} fuzz & corrupted test permutations passed`);
+  } catch (err) {
+    assert(false, `Fuzz suite failed: ${err.message}`);
   }
 
   // Summary Report
