@@ -1,43 +1,36 @@
-<!DOCTYPE html> 
-<html>
+<!DOCTYPE html>
+<html translate="no">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0" />
-		
+		<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=5.0, initial-scale=1.0" />
+		<meta name="theme-color" content="#474747">
 		<title>Open-Shop | Online Image Editor</title>
 		
-		<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-		<link rel="icon" sizes="256x256" href="promo/icon256.png">
-		<link rel="image_src" type="image/png" href="promo/thumb256.png" />
-		<link rel="manifest" href="manifest.json">
-		
-		<meta name="description" content="Open and edit PSD, XCF, Sketch and raster image files. Apply photo effects, adjustments, layers and filters." />
-		
-		<link rel="stylesheet" href="style/all.css?v=17" />
+		<link rel="icon" href="promo/icon.svg" type="image/svg+xml" />
+		<link rel="stylesheet" href="style/all.css?v=34" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
-
+		
 		<style>
-			#cap, .topfloat {
-				display: none !important;
-			}
+			#cap, .topfloat { display: none !important; }
 		</style>
 		
-		<!-- Open-Shop Diagnostics & Error Logging Engine (Loaded early to catch all errors) -->
-		<script src="code/openshop-logger.js?v=17"></script>
+		<!-- Diagnostics Engine -->
+		<script src="code/openshop-logger.js?v=34"></script>
 	</head>
-	<body>
+	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
 		<div class="topfloat" style="display:none;"></div>
-		<script>function showCap(){} function hideCap(){}</script>
+		<script>
+			function showCap(){} 
+			function hideCap(){}
+		</script>
 		
-		<!-- Core Engine Scripts (New Modern Engine) -->
-		<script src="code/external/ext.js?v=17"></script>	
-		<script src="code/dbs.js?v=17"></script>
-		<script src="code/openshop.js?v=17"></script>
-
-		<!-- Open-Shop Enhancements: Crash Recovery, Agent Automation API, and Memory Guard -->
-		<script src="code/openshop-recovery.js?v=17"></script>
-		<script src="code/openshop-agent.js?v=17"></script>
-		<script src="code/openshop-memory.js?v=17"></script>
+		<script src="code/external/ext.js?v=34"></script>
+		<script src="code/dbs.js?v=34"></script>
+		<script src="code/openshop.js?v=34"></script>
+		
+		<script src="code/openshop-recovery.js?v=34"></script>
+		<script src="code/openshop-agent.js?v=34"></script>
+		<script src="code/openshop-memory.js?v=34"></script>
 	</body>
 </html>

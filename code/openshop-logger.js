@@ -165,30 +165,7 @@
     const style = document.createElement('style');
     style.textContent = `
       #openshop-logs-badge {
-        position: fixed;
-        bottom: 12px;
-        right: 14px;
-        z-index: 999999;
-        background: #1e293b;
-        color: #94a3b8;
-        border: 1px solid rgba(255,255,255,0.14);
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 11px;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-        user-select: none;
-        transition: all 0.15s ease;
-      }
-      #openshop-logs-badge:hover {
-        background: #334155;
-        color: #f8fafc;
-        transform: translateY(-1px);
+        display: none !important;
       }
       #openshop-logs-badge.has-errors {
         background: #991b1b;
