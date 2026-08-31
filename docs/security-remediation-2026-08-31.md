@@ -42,6 +42,8 @@ The current upstream/minified input no longer matches these required patch ancho
 ## Mistakes and lessons
 
 - A PowerShell HTTP response body was a byte array, so calling `.Trim()` on it failed. Decode response bytes explicitly before text assertions.
+- Do not assume a status endpoint uses `GET`; this server exposes `/api/status` inside its JSON `POST` API. Inspect the route method before probing it.
+- PowerShell `Invoke-WebRequest.Content` can be text or bytes depending on the response/runtime. Check the actual type instead of forcing either representation.
 - Passing `-- --help` to the repository test command unexpectedly ran the full existing suite. Inspect package scripts before forwarding arguments.
 - The first origin-gate draft could accept opaque `null` origins. Require a non-opaque same-origin value.
 - Lexical path containment alone does not cover Windows junctions. Check containment again after canonical `realpath` resolution.
