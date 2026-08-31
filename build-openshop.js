@@ -320,13 +320,13 @@ async function build() {
   ppCode = requiredReplace(
     ppCode,
     'window.onmessage=function($){if(Storage.aGX($.source))return;',
-    'window.onmessage=function($){if(Storage.aGX($.source))return;var osTrustedOrigin=$.origin!=="null"&&window.location.origin!=="null"&&$.origin===window.location.origin,osTrustedSource=$.source===window||$.source===window.parent||(window.opener&&$.source===window.opener);if(!osTrustedOrigin||!osTrustedSource)return;',
+    'window.onmessage=function($){if(Storage.aGX($.source))return;var osTrustedOrigin=$.origin!=="null"&&window.location.origin!=="null"&&$.origin===window.location.origin,osTrustedSource=$.source===window||$.source===window.parent||(window.opener&&$.source===window.opener);if(!osTrustedOrigin||!osTrustedSource||$.source===window&&($.data==="done"||$.data==="saved"))return;',
     'secure core message command channel'
   );
   ppCode = requiredReplace(
     ppCode,
     'if(window.parent!=window)window.parent.postMessage(y.data.lN,"*");',
-    'if(window.parent!=window)window.parent.postMessage(y.data.lN,window.location.origin);',
+    'window.parent.postMessage(y.data.lN,window.location.origin);',
     'restrict parent message response origin'
   );
 
