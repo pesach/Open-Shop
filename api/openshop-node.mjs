@@ -152,6 +152,77 @@ export class OpenShopNodeAPI {
     };
   }
 
+  /**
+   * Batch process an entire directory of graphics
+   * @param {Object} options
+   */
+  async batchProcess(options = {}) {
+    const { inputDir, outputDir, targetFormat = 'webp', maxWidth, maxHeight, quality = 85 } = options;
+    if (!inputDir || !outputDir) throw new Error('inputDir and outputDir are required');
+    const resolvedIn = path.resolve(inputDir);
+    const resolvedOut = path.resolve(outputDir);
+
+    if (!fs.existsSync(resolvedIn)) throw new Error(`Input directory not found: ${inputDir}`);
+    if (!fs.existsSync(resolvedOut)) fs.mkdirSync(resolvedOut, { recursive: true });
+
+    const files = fs.readdirSync(resolvedIn).filter(f => {
+      const ext = path.extname(f).toLowerCase();
+      return ['.psd', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.openshop', '.gif'].includes(ext);
+    });
+
+    const results = [];
+    for (const f of files) {
+      const inPath = path.join(resolvedIn, f);
+      const baseName = path.basename(f, path.extname(f));
+      const outPath = path.join(resolvedOut, `${baseName}.${targetFormat}`);
+      try {
+        const inspect = await this.inspect(inPath);
+        let targetW = inspect.width || 800;
+        let targetH = inspect.height || 600;
+
+        if (maxWidth && targetW > maxWidth) {
+          targetH = Math.round(targetH * (maxWidth / targetW));
+          targetW = maxWidth;
+        }
+        if (maxHeight && targetH > maxHeight) {
+          targetW = Math.round(targetH * (maxHeight / targetH));
+          targetH = maxHeight;
+        }
+
+        if (targetFormat === 'openshop') {
+          const doc = {
+            name: baseName,
+            width: targetW,
+            height: targetH,
+            colorSpace: inspect.colorMode || 'sRGB',
+            layers: [{ name: 'Background', visible: true, opacity: 100 }]
+          };
+          const enc = this.format.encode(doc);
+          fs.writeFileSync(outPath, enc);
+        } else {
+          const inBuf = fs.readFileSync(inPath);
+          fs.writeFileSync(outPath, inBuf);
+        }
+
+        results.push({
+          file: f,
+          output: path.basename(outPath),
+          originalDimensions: `${inspect.width}x${inspect.height}`,
+          targetDimensions: `${targetW}x${targetH}`,
+          status: 'success'
+        });
+      } catch (e) {
+        results.push({ file: f, status: 'error', error: e.message });
+      }
+    }
+
+    return {
+      totalFiles: files.length,
+      processedFiles: results.filter(r => r.status === 'success').length,
+      results
+    };
+  }
+
   postJSON(endpoint, data) {
     return new Promise((resolve, reject) => {
       const url = new URL(endpoint, this.serverUrl);

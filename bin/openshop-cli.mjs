@@ -24,6 +24,7 @@ Open-Shop Headless Agent CLI
 Commands:
   inspect <filePath>               Inspect PSD / .openshop / image metadata and dimensions
   convert <inputFile> <outputFile> Convert image format headlessly
+  batch <inDir> <outDir> [format]  Batch process and convert an entire folder
   script <scriptCodeOrFile>        Execute Photoshop ExtendScript code on headless DOM
   corpus                           Generate deterministic multi-format test corpus
   fuzz                             Run parser & decoder fuzz / resilience test suite
@@ -70,6 +71,17 @@ Commands:
       case 'fuzz': {
         const fuzzRes = await runFuzzSuite();
         if (fuzzRes.passed !== fuzzRes.total) process.exit(1);
+        break;
+      }
+
+      case 'batch': {
+        const inputDir = args[0] || 'tests/fixtures';
+        const outputDir = args[1] || 'dist/batch_output';
+        const targetFormat = args[2] || 'webp';
+        console.log(`Batch processing directory "${inputDir}" -> "${outputDir}" (Format: ${targetFormat})...`);
+        const batchRes = await openshop.batchProcess({ inputDir, outputDir, targetFormat });
+        console.log(`Batch finished: ${batchRes.processedFiles}/${batchRes.totalFiles} files processed.`);
+        console.log(JSON.stringify(batchRes, null, 2));
         break;
       }
 

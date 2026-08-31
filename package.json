@@ -11,7 +11,9 @@
     "test": "node tests/regression.mjs && node --check code/openshop.js && node --check code/dbs.js && node --check code/external/ext.js && node --check code/openshop-color.js && node --check code/openshop-vector.js && node --check code/openshop-format.js && node --check code/openshop-ps-compat.js",
     "test:fuzz": "node tools/fuzz-test.mjs",
     "corpus:gen": "node tools/corpus-gen.mjs",
-    "cli": "node bin/openshop-cli.mjs"
+    "cli": "node bin/openshop-cli.mjs",
+    "batch": "node bin/openshop-cli.mjs batch",
+    "mcp": "node bin/openshop-mcp.mjs"
   },
   "keywords": [
     "open-shop",

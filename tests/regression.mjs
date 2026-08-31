@@ -94,6 +94,8 @@ async function run() {
     'tools/fuzz-test.mjs',
     'api/openshop-node.mjs',
     'bin/openshop-cli.mjs',
+    'bin/openshop-mcp.mjs',
+    'mcp/openshop-mcp-server.mjs',
     'promo/icon.svg',
     'promo/icon512.png',
     'promo/icon256.png',
@@ -221,6 +223,62 @@ async function run() {
     assert(fuzzRes.passed === fuzzRes.total, `All ${fuzzRes.passed}/${fuzzRes.total} fuzz & corrupted test permutations passed`);
   } catch (err) {
     assert(false, `Fuzz suite failed: ${err.message}`);
+  }
+
+  // Test Suite 10: 100% Air-Gapped Local Typography
+  console.log('\n🔤 10. Air-Gapped Typography & Local Fonts:');
+  try {
+    const fontFiles = [
+      'style/fonts/opensans-400.ttf',
+      'style/fonts/opensans-400i.ttf',
+      'style/fonts/opensans-700.ttf',
+      'style/fonts/opensans-700i.ttf'
+    ];
+    for (const f of fontFiles) {
+      assert(fs.existsSync(path.join(rootDir, f)), `Local font asset exists: ${f}`);
+    }
+    assert(css.includes('@font-face') && css.includes("url('fonts/opensans-400.ttf')"), 'CSS imports local Open Sans @font-face');
+    const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
+    assert(!indexHtml.includes('fonts.googleapis.com'), 'index.html is 100% air-gapped with 0 external Google Fonts links');
+  } catch (err) {
+    assert(false, `Local typography check failed: ${err.message}`);
+  }
+
+  // Test Suite 11: Model Context Protocol (MCP) Server
+  console.log('\n🔌 11. Model Context Protocol (MCP) Server:');
+  try {
+    const { TOOLS, executeTool } = await import('../mcp/openshop-mcp-server.mjs');
+    assert(Array.isArray(TOOLS) && TOOLS.length >= 7, `MCP server registers ${TOOLS.length} tools`);
+
+    const colorToolRes = await executeTool('openshop_color_convert', {
+      fromSpace: 'rgb',
+      toSpace: 'cmyk',
+      values: [255, 128, 0]
+    });
+    assert(colorToolRes.outputValues.c === 0 && colorToolRes.outputValues.y === 100, 'MCP openshop_color_convert returns accurate CMYK');
+
+    const vectorToolRes = await executeTool('openshop_vector_simplify', {
+      points: [[0, 0], [50, 0], [100, 0]]
+    });
+    assert(vectorToolRes.simplifiedPointsCount === 2, 'MCP openshop_vector_simplify eliminates collinear point');
+  } catch (err) {
+    assert(false, `MCP server test failed: ${err.message}`);
+  }
+
+  // Test Suite 12: Batch Processing Engine
+  console.log('\n⚡ 12. Batch Processing CLI & Node Engine:');
+  try {
+    const batchOut = path.join(rootDir, 'dist/test_batch_dist');
+    const batchRes = await openshop.batchProcess({
+      inputDir: path.join(rootDir, 'tests/fixtures'),
+      outputDir: batchOut,
+      targetFormat: 'webp'
+    });
+    assert(batchRes.totalFiles >= 4, `Batch processor scanned ${batchRes.totalFiles} files`);
+    assert(batchRes.processedFiles === batchRes.totalFiles, `All ${batchRes.processedFiles} files processed successfully`);
+    assert(fs.existsSync(path.join(batchOut, 'sample.webp')), 'Batch output file exists');
+  } catch (err) {
+    assert(false, `Batch processing failed: ${err.message}`);
   }
 
   // Summary Report

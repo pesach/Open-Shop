@@ -313,6 +313,35 @@ async function build() {
 
   // Insert master theme variables and corner rules
   const themeVars = `
+@font-face {
+	font-family: 'Open Sans';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('fonts/opensans-400.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Open Sans';
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url('fonts/opensans-400i.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Open Sans';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('fonts/opensans-700.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Open Sans';
+	font-style: italic;
+	font-weight: 700;
+	font-display: swap;
+	src: url('fonts/opensans-700i.ttf') format('truetype');
+}
+
 :root {
 	--base: #474747;
 	--bg-panel: #252525;
@@ -457,7 +486,6 @@ select option {
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
 		<link rel="stylesheet" href="style/all.css?v=52" />
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
 			#cap, .topfloat { display: none !important; }

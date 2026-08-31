@@ -3,13 +3,17 @@
  * Enables 100% offline usage with robust caching of core engine files,
  * styles, fonts, vector icons, and diagnostic tools.
  */
-const CACHE_NAME = 'openshop-cache-v4';
+const CACHE_NAME = 'openshop-cache-v5';
 
 const CORE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './style/all.css',
+  './style/fonts/opensans-400.ttf',
+  './style/fonts/opensans-400i.ttf',
+  './style/fonts/opensans-700.ttf',
+  './style/fonts/opensans-700i.ttf',
   './code/openshop.js',
   './code/dbs.js',
   './code/external/ext.js',
@@ -18,6 +22,10 @@ const CORE_ASSETS = [
   './code/openshop-agent.js',
   './code/openshop-memory.js',
   './code/openshop-batch.js',
+  './code/openshop-color.js',
+  './code/openshop-vector.js',
+  './code/openshop-format.js',
+  './code/openshop-ps-compat.js',
   './promo/icon.svg',
   './promo/logo.svg',
   './promo/icon256.png',

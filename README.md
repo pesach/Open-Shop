@@ -106,7 +106,48 @@ editorWindow.postMessage({
 
 ---
 
-### 6. 🛡️ Crash Recovery & Memory Safety
+### 5. 🤖 Model Context Protocol (MCP) Server & CLI
+
+Open-Shop provides a native **MCP Server** (`bin/openshop-mcp.mjs`) compatible with modern AI agent environments (Claude Desktop, Cursor, Antigravity) over JSON-RPC stdio.
+
+#### Running the MCP Server
+```bash
+npm run mcp
+# or: node bin/openshop-mcp.mjs
+```
+
+#### MCP Tools Exposed:
+- `openshop_inspect`: Deep PSD/image/.openshop inspection (dimensions, color space, layers).
+- `openshop_convert`: Headless format conversion (PSD, PNG, JPG, WebP, SVG, OPENSHOP).
+- `openshop_eval_script`: Run Adobe Photoshop ExtendScript code on headless documents.
+- `openshop_color_convert`: Color space conversions (RGB, CMYK, CIELAB) & Delta-E calculations.
+- `openshop_vector_simplify`: Bézier & polyline path simplification.
+- `openshop_batch_process`: High-throughput directory batch image processing.
+
+#### Headless CLI Commands:
+```bash
+# Inspect graphic metadata
+npm run cli -- inspect ./demo.psd
+
+# Batch process and convert an entire folder
+npm run cli -- batch ./raw-images ./dist/webp webp
+
+# Run Photoshop ExtendScript
+npm run cli -- script "doc.resizeImage(1920, 1080); doc.activeLayer.name = 'Hero';"
+
+# Run resilience & fuzz test suite
+npm run test:fuzz
+```
+
+---
+
+### 6. 🔤 100% Air-Gapped Local Typography
+
+Open-Shop packages all typography assets (Open Sans 400, 400i, 700, 700i) locally within `style/fonts/` and caches them via Service Worker (`openshop-cache-v5`). It operates completely offline with zero network dependencies.
+
+---
+
+### 7. 🛡️ Crash Recovery & Memory Safety
 
 - **IndexedDB Autosave**: Automatically snapshots the active project in the background every 45s. In case of accidental tab close or browser crash, a restore banner offers 1-click recovery.
 - **Memory Guard**: Continuously tracks JS heap usage and resolution boundaries to protect the browser tab from unexpected out-of-memory terminations.
