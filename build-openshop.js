@@ -277,6 +277,22 @@ async function build() {
     'if(window.parent!=window)window.parent.postMessage(y.data.lN,"*");',
     'window.parent.postMessage(y.data.lN,window.location.origin);'
   );
+  ppCode = ppCode.replace(
+    /if\(b\.yP\(this\.mj\.\$\)\)\s*\$\s*\+=\s*31;[\s\S]*?if\(b\.yP\(this\.Kn\.\$\)\)\s*\$\s*\+=\s*32;/,
+    () => 'if(b.yP(this.mj.$))$+=Math.ceil((this.mj.$&&this.mj.$.getBoundingClientRect().height)||38);if(b.yP(this.Kn.$))$+=Math.ceil((this.Kn.$&&this.Kn.$.getBoundingClientRect().height)||38);'
+  );
+  ppCode = ppCode.replace(
+    /,\s*\{\s*name:\s*"Peas Maker"[\s\S]*?url:\s*"[^"]*peasmaker"[^}]*\}/,
+    ''
+  );
+  ppCode = ppCode.replace(
+    /,\s*\{\s*name:\s*"Plugins",\s*KU:\s*(!0|true)\s*\}/,
+    ''
+  );
+  ppCode = ppCode.replace(
+    /,\s*\{\s*N:\s*G\.E\.b,\s*M:\s*\{\s*S:\s*G\.m\.bq,\s*V\$:\s*"res1"\s*\}\s*\}/,
+    ''
+  );
 
   // 13. General Branding & naming replacement across openshop.js
   ppCode = ppCode.replaceAll('Photopea', 'OpenShop');
@@ -440,7 +456,7 @@ select option {
 		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
-		<link rel="stylesheet" href="style/all.css?v=51" />
+		<link rel="stylesheet" href="style/all.css?v=52" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -448,7 +464,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=51"></script>
+		<script src="code/openshop-logger.js?v=52"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -458,18 +474,18 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=51"></script>
-		<script src="code/dbs.js?v=51"></script>
-		<script src="code/openshop.js?v=51"></script>
+		<script src="code/external/ext.js?v=52"></script>
+		<script src="code/dbs.js?v=52"></script>
+		<script src="code/openshop.js?v=52"></script>
 		
-		<script src="code/openshop-recovery.js?v=51"></script>
-		<script src="code/openshop-agent.js?v=51"></script>
-		<script src="code/openshop-memory.js?v=51"></script>
-		<script src="code/openshop-batch.js?v=51"></script>
-		<script src="code/openshop-color.js?v=51"></script>
-		<script src="code/openshop-vector.js?v=51"></script>
-		<script src="code/openshop-format.js?v=51"></script>
-		<script src="code/openshop-ps-compat.js?v=51"></script>
+		<script src="code/openshop-recovery.js?v=52"></script>
+		<script src="code/openshop-agent.js?v=52"></script>
+		<script src="code/openshop-memory.js?v=52"></script>
+		<script src="code/openshop-batch.js?v=52"></script>
+		<script src="code/openshop-color.js?v=52"></script>
+		<script src="code/openshop-vector.js?v=52"></script>
+		<script src="code/openshop-format.js?v=52"></script>
+		<script src="code/openshop-ps-compat.js?v=52"></script>
 
 		<script>
 			window.addEventListener('beforeinstallprompt', (e) => {
