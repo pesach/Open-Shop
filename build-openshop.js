@@ -97,10 +97,15 @@ ppCode = ppCode.replace(
   '/* Account button permanently excluded */'
 );
 
-// 6. Remove topfloat buttons (About, Issues, Learn, Blog, API, Twitter, Facebook, Reddit)
+// 6. Completely remove About, Report a bug, Learn, Blog, API, Reddit, Twitter, Facebook from top bar (eP class)
 ppCode = ppCode.replace(
-  'for (var n = 0; n < this.xX.length; n++) {',
-  'this.qE.style.display = "none"; for (var n = 0; false && n < this.xX.length; n++) {'
+  'var r = [[0, 13, 3], [0, 13, 4], [0, 13, 5], "Blog", "API",',
+  'var r = []; /* top links stripped */ var _unused = [[0, 13, 3],'
+);
+
+ppCode = ppCode.replace(
+  'eP.prototype.W = function () {\n    var y = this.a2T;\n    b.KY(y);',
+  'eP.prototype.W = function () {\n    var y = this.a2T;\n    y.style.display = "none";\n    b.KY(y);\n    return;'
 );
 
 // 7. Remove PeaMark & About from More menu
