@@ -2,22 +2,92 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 
-function fetchUrl(url) {
+const MAX_REDIRECTS = 5;
+const REQUEST_TIMEOUT_MS = 30000;
+const MAX_RESPONSE_BYTES = 50 * 1024 * 1024;
+const patchFailures = [];
+
+function countMatches(source, pattern) {
+  if (typeof pattern === 'string') {
+    if (pattern.length === 0) throw new Error('Patch anchors must not be empty');
+    return source.split(pattern).length - 1;
+  }
+
+  const flags = pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`;
+  return Array.from(source.matchAll(new RegExp(pattern.source, flags))).length;
+}
+
+function requiredReplace(source, pattern, replacement, label, expectedCount = 1) {
+  const actualCount = countMatches(source, pattern);
+  if (actualCount !== expectedCount) {
+    patchFailures.push(`${label}: expected ${expectedCount} match(es), found ${actualCount}`);
+    return source;
+  }
+  return source.replace(pattern, replacement);
+}
+
+function assertRequiredPatches() {
+  if (patchFailures.length === 0) return;
+  throw new Error(`Required build patches failed:\n- ${patchFailures.join('\n- ')}`);
+}
+
+function fetchUrl(url, redirectCount = 0) {
+  const target = new URL(url);
+  if (target.protocol !== 'https:') {
+    return Promise.reject(new Error(`Refusing non-HTTPS download: ${target.href}`));
+  }
+
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
+    const request = https.get(target, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchUrl(res.headers.location).then(resolve).catch(reject);
+        res.resume();
+        if (redirectCount >= MAX_REDIRECTS) {
+          reject(new Error(`Too many redirects while downloading ${target.href}`));
+          return;
+        }
+
+        let redirectUrl;
+        try {
+          redirectUrl = new URL(res.headers.location, target);
+        } catch (error) {
+          reject(new Error(`Invalid redirect from ${target.href}: ${error.message}`));
+          return;
+        }
+
+        fetchUrl(redirectUrl, redirectCount + 1).then(resolve, reject);
+        return;
       }
-      let data = [];
-      res.on('data', chunk => data.push(chunk));
-      res.on('end', () => resolve({ status: res.statusCode, data: Buffer.concat(data), headers: res.headers }));
-    }).on('error', reject);
+
+      if (res.statusCode !== 200) {
+        res.resume();
+        reject(new Error(`Download failed for ${target.href}: HTTP ${res.statusCode}`));
+        return;
+      }
+
+      const data = [];
+      let responseBytes = 0;
+      res.on('data', (chunk) => {
+        responseBytes += chunk.length;
+        if (responseBytes > MAX_RESPONSE_BYTES) {
+          res.destroy(new Error(`Download exceeded ${MAX_RESPONSE_BYTES} bytes: ${target.href}`));
+          return;
+        }
+        data.push(chunk);
+      });
+      res.on('error', reject);
+      res.on('end', () => resolve({ status: res.statusCode, data: Buffer.concat(data), headers: res.headers, url: target.href }));
+    });
+
+    request.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      request.destroy(new Error(`Download timed out after ${REQUEST_TIMEOUT_MS}ms: ${target.href}`));
+    });
+    request.on('error', reject);
   });
 }
 
 async function build() {
   console.log('--- Step 1: Ensuring local directory structure ---');
-  ['code/external', 'code/dbs', 'code/pp', 'style', 'promo', 'img'].forEach(d => {
+  ['fetched-pp', 'code/external', 'code/dbs', 'code/pp', 'style', 'promo', 'img'].forEach(d => {
     if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
   });
 
@@ -33,7 +103,7 @@ async function build() {
     if (!fs.existsSync(item.dest)) {
       console.log(`Downloading ${item.url} -> ${item.dest}...`);
       const res = await fetchUrl(item.url);
-      if (res.status === 200) fs.writeFileSync(item.dest, res.data);
+      fs.writeFileSync(item.dest, res.data);
     }
   }
 
@@ -41,16 +111,15 @@ async function build() {
   let extCode = fs.readFileSync('fetched-pp/ext1787746256.js', 'utf8');
   extCode = extCode.replaceAll('Photopea', 'OpenShop');
   extCode = extCode.replaceAll('photopea', 'openshop');
-  fs.writeFileSync('code/external/ext.js', extCode, 'utf8');
 
   console.log('--- Step 4: Generating code/dbs.js with Blue Open-Shop Logos and OpenShop naming ---');
   let dbsCode = fs.readFileSync('fetched-pp/DBS1781343324.js', 'utf8');
   const blueLogoDataUrl = 'data:image/svg+xml;base64,' + Buffer.from('<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 110" width="480" height="110"><defs><linearGradient id="osg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="50%" stop-color="#2563eb"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs><g transform="translate(10, 5)"><rect x="0" y="0" width="100" height="100" rx="26" fill="url(#osg)"/><circle cx="50" cy="50" r="28" fill="none" stroke="#ffffff" stroke-width="7"/><path d="M50 32 L68 50 L50 68 L32 50 Z" fill="#ffffff"/><circle cx="50" cy="50" r="6" fill="#2563eb"/></g><text x="130" y="74" font-family="sans-serif" font-size="64" font-weight="700" fill="#ffffff">Open-Shop</text></svg>').toString('base64');
 
-  dbsCode = dbsCode.replace(/"logo_pp"\s*:\s*"[^"]+"/, `"logo_pp" : "${blueLogoDataUrl}"`);
-  dbsCode = dbsCode.replace(/"logo_vp"\s*:\s*"[^"]+"/, `"logo_vp" : "${blueLogoDataUrl}"`);
-  dbsCode = dbsCode.replace(/"logo_jp"\s*:\s*"[^"]+"/, `"logo_jp" : "${blueLogoDataUrl}"`);
-  dbsCode = dbsCode.replace(/"logo_cucumber"\s*:\s*"[^"]+"/, `"logo_cucumber" : "${blueLogoDataUrl}"`);
+  dbsCode = requiredReplace(dbsCode, /"logo_pp"\s*:\s*"[^"]+"/, `"logo_pp" : "${blueLogoDataUrl}"`, 'DBS Photopea logo');
+  dbsCode = requiredReplace(dbsCode, /"logo_vp"\s*:\s*"[^"]+"/, `"logo_vp" : "${blueLogoDataUrl}"`, 'DBS Vectorpea logo');
+  dbsCode = requiredReplace(dbsCode, /"logo_jp"\s*:\s*"[^"]+"/, `"logo_jp" : "${blueLogoDataUrl}"`, 'DBS Jampea logo');
+  dbsCode = requiredReplace(dbsCode, /"logo_cucumber"\s*:\s*"[^"]+"/, `"logo_cucumber" : "${blueLogoDataUrl}"`, 'DBS Cucumber logo');
 
   dbsCode = dbsCode.replaceAll('Photopea', 'OpenShop');
   dbsCode = dbsCode.replaceAll('photopea', 'openshop');
@@ -58,32 +127,32 @@ async function build() {
   dbsCode = dbsCode.replaceAll('vectorpea', 'openshop');
   dbsCode = dbsCode.replaceAll('Jampea', 'OpenShop');
   dbsCode = dbsCode.replaceAll('jampea', 'openshop');
-  dbsCode = dbsCode.replace(/var PMRK\s*=\s*\[[\s\S]*?\];/, 'var PMRK = [];');
-  fs.writeFileSync('code/dbs.js', dbsCode, 'utf8');
+  dbsCode = requiredReplace(dbsCode, /var PMRK\s*=\s*\[[\s\S]*?\];/, 'var PMRK = [];', 'DBS PeaMark data');
 
   console.log('--- Step 5: Patching and Generating code/openshop.js ---');
   let ppCode = fs.readFileSync('fetched-pp/pp1787917131.js', 'utf8');
 
   // 1. Permanently disable showCap
-  ppCode = ppCode.replace('window.showCap=function(){', 'window.showCap=function(){};window._old_showCap=function(){');
-  ppCode = ppCode.replace('window.hideCap=function(){', 'window.hideCap=function(){};window._old_hideCap=function(){');
-  ppCode = ppCode.replace('if(window.locStor.getItem("capShown")=="false"||window.self!=window.top){}else{', 'if(true){}else{');
+  ppCode = requiredReplace(ppCode, 'window.showCap=function(){', 'window.showCap=function(){};window._old_showCap=function(){', 'disable showCap');
+  ppCode = requiredReplace(ppCode, 'window.hideCap=function(){', 'window.hideCap=function(){};window._old_hideCap=function(){', 'disable hideCap');
+  ppCode = requiredReplace(ppCode, 'if(window.locStor.getItem("capShown")=="false"||window.self!=window.top){}else{', 'if(true){}else{', 'disable capability prompt');
 
   // 2. Disable external telemetry
-  ppCode = ppCode.replace(/g7\.event=function[\s\S]*?v\.send\(\);\s*\};/, 'g7.event=function(y,P,D){};');
-  ppCode = ppCode.replace(/g7\.kH=function[\s\S]*?return y;\s*\};/, 'g7.kH=function(y){return y;};');
-  ppCode = ppCode.replace(/g7\.xt=function[\s\S]*?return g7\.kH\(y\);\s*\};/, 'g7.xt=function(y){return y;};');
-  ppCode = ppCode.replace('if(g7.w1()&&navigator.onLine){', 'if(false){');
-  ppCode = ppCode.replaceAll(/fetch\([^)]*papi\/event\.php[^)]*\)/g, 'void 0');
+  ppCode = requiredReplace(ppCode, /g7\.event=function[\s\S]*?v\.send\(\);\s*\};/, 'g7.event=function(y,P,D){};', 'disable g7.event telemetry');
+  ppCode = requiredReplace(ppCode, /g7\.kH=function[\s\S]*?return y;\s*\};/, 'g7.kH=function(y){return y;};', 'disable g7.kH external routing');
+  ppCode = requiredReplace(ppCode, /g7\.xt=function[\s\S]*?return g7\.kH\(y\);\s*\};/, 'g7.xt=function(y){return y;};', 'disable g7.xt external routing');
+  ppCode = requiredReplace(ppCode, 'if(g7.w1()&&navigator.onLine){', 'if(false){', 'disable online telemetry branch');
+  ppCode = requiredReplace(ppCode, /fetch\([^)]*papi\/event\.php[^)]*\)/g, 'void 0', 'remove telemetry fetches', 5);
 
   // 3. Permanent 100% Pro Mode
-  ppCode = ppCode.replace('dj.prototype.b$=function(){', 'dj.prototype.b$=function(){return true;};dj.prototype._old_b$=function(){');
-  ppCode = ppCode.replace('ke.r7=function(){', 'ke.r7=function(){return true;};ke._old_r7=function(){');
-  ppCode = ppCode.replace('ke.WT=function(){', 'ke.WT=function(){return false;};ke._old_WT=function(){');
-  ppCode = ppCode.replace('ke.wN=function(){', 'ke.wN=function(){return false;};ke._old_wN=function(){');
+  ppCode = requiredReplace(ppCode, 'dj.prototype.b$=function(){', 'dj.prototype.b$=function(){return true;};dj.prototype._old_b$=function(){', 'enable Pro mode');
+  ppCode = requiredReplace(ppCode, 'ke.r7=function(){', 'ke.r7=function(){return true;};ke._old_r7=function(){', 'enable premium features');
+  ppCode = requiredReplace(ppCode, 'ke.WT=function(){', 'ke.WT=function(){return false;};ke._old_WT=function(){', 'disable account requirement');
+  ppCode = requiredReplace(ppCode, 'ke.wN=function(){', 'ke.wN=function(){return false;};ke._old_wN=function(){', 'disable hosted-mode requirement');
 
   // 4. In menubar: Inject Open-Shop logo on top-left BEFORE File
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'this.$.appendChild(this.a1b);this.$.appendChild(this.aIP);',
     `this.$.appendChild(this.a1b);
     this.$.appendChild(this.aIP);
@@ -91,116 +160,179 @@ async function build() {
     _osLogo.src = "promo/icon.svg";
     _osLogo.setAttribute("style", "width: 18px; height: 18px; vertical-align: middle; margin: 0 8px 0 6px; cursor: pointer; display: inline-block;");
     _osLogo.setAttribute("title", "Open-Shop");
-    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);`
+    this.a1b.insertBefore(_osLogo, this.a1b.firstChild);`,
+    'inject menubar logo'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'b.KY(this.a1b);for(var n=0;n<this.jt.length;n++){',
-    'b.KY(this.a1b);if(this._osLogo)this.a1b.appendChild(this._osLogo);for(var n=0;n<this.jt.length;n++){'
+    'b.KY(this.a1b);if(this._osLogo)this.a1b.appendChild(this._osLogo);for(var n=0;n<this.jt.length;n++){',
+    'preserve menubar logo'
   );
 
   // 5. Hide Account from the menu
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'if(y.h1){r.appendChild(this.TH.$)}',
-    '/* Account button excluded */'
+    '/* Account button excluded */',
+    'remove Account button'
   );
 
   // 6. Completely remove About, Report a bug, Learn, Blog, API, Reddit, Twitter, Facebook from top bar
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'var r=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path',
-    'var r=[];var _unused=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path'
+    'var r=[];var _unused=[[0,13,3],[0,13,4],[0,13,5],"Blog","API",v+"<path',
+    'remove external topbar links'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'eP.prototype.W=function(){var y=this.a2T;b.KY(y);for(var n=0;',
-    'eP.prototype.W=function(){var y=this.a2T;y.style.display="none";b.KY(y);return;for(var n=0;'
+    'eP.prototype.W=function(){var y=this.a2T;y.style.display="none";b.KY(y);return;for(var n=0;',
+    'hide external topbar panel'
   );
 
   // 7. Remove PeaDrive, PeaGames, Photopea, Vectorpea, Jampea
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     /r\.push\(\["Photopea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512\.png"\][\s\S]*?\["Jampea",\s*null,\s*"https:\/\/www\.vecpea\.com\/promo\/icon512_jp\.png"\]\);?/,
-    '/* side launchers removed */'
+    '/* side launchers removed */',
+    'remove side launchers'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     /dm\.Jc\s*=\s*\[\["PeaGames"[\s\S]*?\]\];/,
-    'dm.Jc = [];'
+    'dm.Jc = [];',
+    'remove PeaGames launcher'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     '["PeaDrive","peadriveStorage.html","strg/peadrive",!0,"A cloud storage system from Photopea."],',
-    ''
+    '',
+    'remove PeaDrive storage'
   );
 
   // 8. Enforce Blue Open-Shop logo and 3 Home buttons: New Project, Open From Computer, Install Open-Shop (with Blue Favicon)
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'v.setAttribute("src",PIMG[n==0?"l"+"o"+"g"+"o":"b"+"o"+"t"+"t"+"o"+"m"]);',
-    'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);'
+    'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);',
+    'set Home logo source'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'if(n==0)this.aBW=v;else this.aoK=v',
-    'if(n==0){this.aBW=v;v.setAttribute("src","promo/logo.svg");v.style.width="360px";v.style.height="82px";v.style.objectFit="contain";v.style.marginBottom="24px";}else this.aoK=v'
+    'if(n==0){this.aBW=v;v.setAttribute("src","promo/logo.svg");v.style.width="360px";v.style.height="82px";v.style.objectFit="contain";v.style.marginBottom="24px";}else this.aoK=v',
+    'style Home logo'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'this.aBW.setAttribute("src",PIMG[r]);',
-    'this.aBW.setAttribute("src","promo/logo.svg");this.aBW.style.width="360px";this.aBW.style.height="82px";this.aBW.style.objectFit="contain";this.aBW.style.marginBottom="24px";'
+    'this.aBW.setAttribute("src","promo/logo.svg");this.aBW.style.width="360px";this.aBW.style.height="82px";this.aBW.style.objectFit="contain";this.aBW.style.marginBottom="24px";',
+    'preserve Home logo'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'n<[6,4,3][d7]',
-    'n<3'
+    'n<3',
+    'limit Home actions'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     /if\(n==0\)P\.data=\{S:G\.m\.bq,V\$:"newproject"\};[\s\S]*?this\.K\(P\);/,
-    'if(n==0){P.data={S:G.m.bq,V$:"newproject"};this.K(P);}else if(n==1){P.data={S:G.m.D$};this.K(P);}else if(n==2){var _p=window.deferredInstallPrompt||(window.app&&window.app.o?window.app.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;}else{alert("To install Open-Shop into your browser as a standalone app, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}}'
+    'if(n==0){P.data={S:G.m.bq,V$:"newproject"};this.K(P);}else if(n==1){P.data={S:G.m.D$};this.K(P);}else if(n==2){var _p=window.deferredInstallPrompt||(window.app&&window.app.o?window.app.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;}else{alert("To install Open-Shop into your browser as a standalone app, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}}',
+    'bind Home Install action'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'P=[[11,7],[1,6],[25,0],[0,17,6],"Generate","Video?"]',
-    'P=[[11,7],[1,6],[0,17,6]]'
+    'P=[[11,7],[1,6],[0,17,6]]',
+    'keep configured Home actions'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'D="lrs/newlayer strg/tdevice pix_layer lrs/clipping lrs/newlayer panels/actions".split(" ");',
-    'D="lrs/newlayer strg/tdevice promo_icon".split(" ");'
+    'D="lrs/newlayer strg/tdevice promo_icon".split(" ");',
+    'configure Home action icons'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'y[n].innerHTML="<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000"+cf.get(P[n]);',
-    'y[n].innerHTML=(n==2?"<img src=\\"promo/icon.svg\\" style=\\"width:20px;height:20px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);'
+    'y[n].innerHTML=(n==2?"<img src=\\"promo/icon.svg\\" style=\\"width:20px;height:20px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);',
+    'render Install OpenShop icon'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'if(n==3)t.style.display="none";',
-    '/* buttons visible */'
+    '/* buttons visible */',
+    'keep Home buttons visible'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'this.xX[3].style.display=j.iI?"inline-block":"none";',
-    '/* install button is item 2 */'
+    '/* install button is item 2 */',
+    'configure Install OpenShop visibility'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'b.v(t,D+"margin:20px 10px 0 10px; cursor:pointer; padding:12px;");',
-    'b.v(t,D+"margin:16px 8px 0 8px; cursor:pointer; padding:10px 18px; white-space:nowrap;");'
+    'b.v(t,D+"margin:16px 8px 0 8px; cursor:pointer; padding:10px 18px; white-space:nowrap;");',
+    'style Home action buttons'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'var r=Math.min(y*.9,600);',
-    'var r=Math.min(y*.95,860);'
+    'var r=Math.min(y*.95,860);',
+    'widen Home action area'
   );
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     /if\(T==G\.m\.uK\)if\(this\.o\.iI\)\{this\.o\.iI\.prompt\(\);[\s\S]*?this\.o\.iI=null\}/,
-    'if(T==G.m.uK){var _p=window.deferredInstallPrompt||(this.o?this.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;if(this.o)this.o.iI=null;}else{alert("To install Open-Shop, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}'
+    'if(T==G.m.uK){var _p=window.deferredInstallPrompt||(this.o?this.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;if(this.o)this.o.iI=null;}else{alert("To install Open-Shop, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}',
+    'bind menu Install action'
   );
 
   // 9. Assign window.app
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'document.body.appendChild(new dj().$);',
-    'window.app=new dj();document.body.appendChild(window.app.$);'
+    'window.app=new dj();document.body.appendChild(window.app.$);',
+    'expose window.app'
   );
 
   // 10. Remove PeaMark and About OpenShop from More menu
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     /Y\.items\.push\(\{name:\s*"PeaMark"\}\);[\s\S]*?Y\.Ii\.push\(\{N:G\.E\.b,M:\{S:G\.m\.bq,V\$:"aboutpp"\}\}\);?/,
-    '/* PeaMark and About removed from More menu */'
+    '/* PeaMark and About removed from More menu */',
+    'remove PeaMark and About menu items'
   );
 
   // 11. Fix alertpanel removeChild safety guard
-  ppCode = ppCode.replace(
+  ppCode = requiredReplace(
+    ppCode,
     'this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]',
-    'if(P&&P.parentNode)this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]'
+    'if(P&&P.parentNode)this.dP.removeChild(P);delete this.a1H[JSON.stringify(y)]',
+    'guard alert panel removal'
   );
 
-  // 11. General Branding & naming replacement across openshop.js
+  // 12. Restrict the core script command channel to trusted same-origin windows.
+  ppCode = requiredReplace(
+    ppCode,
+    'window.onmessage=function($){if(Storage.aGX($.source))return;',
+    'window.onmessage=function($){if(Storage.aGX($.source))return;var osTrustedOrigin=$.origin!=="null"&&window.location.origin!=="null"&&$.origin===window.location.origin,osTrustedSource=$.source===window||$.source===window.parent||(window.opener&&$.source===window.opener);if(!osTrustedOrigin||!osTrustedSource)return;',
+    'secure core message command channel'
+  );
+  ppCode = requiredReplace(
+    ppCode,
+    'if(window.parent!=window)window.parent.postMessage(y.data.lN,"*");',
+    'if(window.parent!=window)window.parent.postMessage(y.data.lN,window.location.origin);',
+    'restrict parent message response origin'
+  );
+
+  assertRequiredPatches();
+
+  // 13. General Branding & naming replacement across openshop.js
   ppCode = ppCode.replaceAll('Photopea', 'OpenShop');
   ppCode = ppCode.replaceAll('photopea', 'openshop');
   ppCode = ppCode.replaceAll('Vectorpea', 'OpenShop');
@@ -209,6 +341,8 @@ async function build() {
   ppCode = ppCode.replaceAll('jampea', 'openshop');
   ppCode += '\nwindow.OpenShop = window.OpenShop || {}; window.openshop = window.openshop || window.OpenShop;\n';
 
+  fs.writeFileSync('code/external/ext.js', extCode, 'utf8');
+  fs.writeFileSync('code/dbs.js', dbsCode, 'utf8');
   fs.writeFileSync('code/openshop.js', ppCode, 'utf8');
   console.log('Saved code/openshop.js successfully');
 
@@ -407,4 +541,7 @@ select option {
   console.log('Saved index.html successfully');
 }
 
-build().catch(console.error);
+build().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
