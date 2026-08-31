@@ -329,6 +329,12 @@ async function build() {
     'window.parent.postMessage(y.data.lN,window.location.origin);',
     'restrict parent message response origin'
   );
+  ppCode = requiredReplace(
+    ppCode,
+    'if(b.yP(this.mj.$))$+=31;if(b.yP(this.Kn.$))$+=32;',
+    'if(b.yP(this.mj.$))$+=Math.ceil((this.mj.$&&this.mj.$.getBoundingClientRect().height)||38);if(b.yP(this.Kn.$))$+=Math.ceil((this.Kn.$&&this.Kn.$.getBoundingClientRect().height)||37);',
+    'dynamic topbar and confbar height'
+  );
 
   assertRequiredPatches();
 
@@ -502,7 +508,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=48"></script>
+		<script src="code/openshop-logger.js?v=49"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -512,15 +518,15 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=48"></script>
-		<script src="code/dbs.js?v=48"></script>
-		<script src="code/openshop.js?v=48"></script>
+		<script src="code/external/ext.js?v=49"></script>
+		<script src="code/dbs.js?v=49"></script>
+		<script src="code/openshop.js?v=49"></script>
 		
-		<script src="code/openshop-recovery.js?v=48"></script>
-		<script src="code/openshop-agent.js?v=48"></script>
-		<script src="code/openshop-memory.js?v=48"></script>
-		<script src="code/openshop-autosave.js?v=48"></script>
-		<script src="code/openshop-batch.js?v=48"></script>
+		<script src="code/openshop-recovery.js?v=49"></script>
+		<script src="code/openshop-agent.js?v=49"></script>
+		<script src="code/openshop-memory.js?v=49"></script>
+		<script src="code/openshop-autosave.js?v=49"></script>
+		<script src="code/openshop-batch.js?v=49"></script>
 
 		<script>
 			window.addEventListener('beforeinstallprompt', (e) => {

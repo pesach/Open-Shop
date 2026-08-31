@@ -3,7 +3,7 @@
  * Enables 100% offline usage with robust caching of core engine files,
  * styles, fonts, vector icons, and diagnostic tools.
  */
-const CACHE_NAME = 'openshop-cache-v1';
+const CACHE_NAME = 'openshop-cache-v2';
 
 const CORE_ASSETS = [
   './',
