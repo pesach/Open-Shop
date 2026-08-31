@@ -502,7 +502,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=47"></script>
+		<script src="code/openshop-logger.js?v=48"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -512,15 +512,15 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=47"></script>
-		<script src="code/dbs.js?v=47"></script>
-		<script src="code/openshop.js?v=47"></script>
+		<script src="code/external/ext.js?v=48"></script>
+		<script src="code/dbs.js?v=48"></script>
+		<script src="code/openshop.js?v=48"></script>
 		
-		<script src="code/openshop-recovery.js?v=47"></script>
-		<script src="code/openshop-agent.js?v=47"></script>
-		<script src="code/openshop-memory.js?v=47"></script>
-		<script src="code/openshop-autosave.js?v=47"></script>
-		<script src="code/openshop-batch.js?v=47"></script>
+		<script src="code/openshop-recovery.js?v=48"></script>
+		<script src="code/openshop-agent.js?v=48"></script>
+		<script src="code/openshop-memory.js?v=48"></script>
+		<script src="code/openshop-autosave.js?v=48"></script>
+		<script src="code/openshop-batch.js?v=48"></script>
 
 		<script>
 			window.addEventListener('beforeinstallprompt', (e) => {
@@ -539,6 +539,65 @@ select option {
 `;
   fs.writeFileSync('index.html', html, 'utf8');
   console.log('Saved index.html successfully');
+
+  console.log('--- Step 8: Sanitizing Trackers from Documentation, Tutorials, and API Pages ---');
+  const sanitizeDocs = () => {
+    // 1. learn/*.html
+    const learnDir = path.join(process.cwd(), 'learn');
+    if (fs.existsSync(learnDir)) {
+      const files = fs.readdirSync(learnDir).filter(f => f.endsWith('.html'));
+      for (const f of files) {
+        const fullPath = path.join(learnDir, f);
+        let content = fs.readFileSync(fullPath, 'utf8');
+        content = content.replace(/\r?\n\s*<script async src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js"><\/script>\r?\n\s*<ins class="adsbygoogle"[\s\S]*?<\/ins>\r?\n\s*<script>\s*\(adsbygoogle\s*=\s*window\.adsbygoogle\s*\|\|\s*\[\]\)\.push\(\{\}\);\s*<\/script>/g, '');
+        content = content.replace(/\r?\n\s*<h2 style="margin-top:\s*4em">Comments<\/h2>\r?\n\s*<div id="disqus_thread"><\/div>\r?\n\s*<script>[\s\S]*?disqus\.com\/embed\.js[\s\S]*?<\/script>/g, '');
+        content = content.replace(/\r?\n\s*<div id="disqus_thread"><\/div>\s*<script>[\s\S]*?disqus\.com\/embed\.js[\s\S]*?<\/script>/g, '');
+        content = content.replace(/\r?\n\s*<script>\s*\(function\(i,s,o,g,r,a,m\)[\s\S]*?GoogleAnalyticsObject[\s\S]*?ga\('send',\s*'pageview'\);\s*<\/script>/g, '');
+        fs.writeFileSync(fullPath, content, 'utf8');
+      }
+    }
+
+    // 2. tuts/**/*.html
+    function walkDir(dir) {
+      let results = [];
+      if (!fs.existsSync(dir)) return results;
+      const list = fs.readdirSync(dir);
+      for (const item of list) {
+        const p = path.join(dir, item);
+        const stat = fs.statSync(p);
+        if (stat && stat.isDirectory()) {
+          results = results.concat(walkDir(p));
+        } else if (p.endsWith('.html')) {
+          results.push(p);
+        }
+      }
+      return results;
+    }
+
+    const tutsDir = path.join(process.cwd(), 'tuts');
+    const tutFiles = walkDir(tutsDir);
+    for (const f of tutFiles) {
+      let content = fs.readFileSync(f, 'utf8');
+      content = content.replace(/\r?\n\s*<!-- Global site tag \(gtag\.js\) - Google Analytics -->\r?\n\s*<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=[^"]+"><\/script>\r?\n\s*<script>[\s\S]*?gtag\('config'[\s\S]*?<\/script>/g, '');
+      content = content.replace(/\r?\n\s*<div style="width:110px;\s*margin:\s*0px auto;">[\s\S]*?<\/div>/g, '');
+      content = content.replace(/\r?\n\s*<div id="disqus_thread"><\/div>\r?\n\s*<script[^>]*>[\s\S]*?disqus\.com[\s\S]*?<\/script>/g, '');
+      fs.writeFileSync(f, content, 'utf8');
+    }
+
+    // 3. api/*.html
+    const apiDir = path.join(process.cwd(), 'api');
+    if (fs.existsSync(apiDir)) {
+      const apiFiles = fs.readdirSync(apiDir).filter(f => f.endsWith('.html'));
+      for (const f of apiFiles) {
+        const fullPath = path.join(apiDir, f);
+        let content = fs.readFileSync(fullPath, 'utf8');
+        content = content.replace(/\r?\n\s*<div id="disqus_thread"><\/div>\r?\n\s*<script>[\s\S]*?disqus\.com\/embed\.js[\s\S]*?<\/script>/g, '');
+        fs.writeFileSync(fullPath, content, 'utf8');
+      }
+    }
+  };
+  sanitizeDocs();
+  console.log('Sanitized all documentation, tutorials, and API pages.');
 }
 
 build().catch((error) => {

@@ -7,13 +7,6 @@
 	<!--<link rel="stylesheet" href="https://www.openshop.com/tuts/wp-content/themes/simplex/style.css" type="text/css" media="screen" />-->
 	<link rel="stylesheet" href="https://blog.openshop.com/wp-content/themes/simplex/style.css" type="text/css" media="screen" />
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" rel="stylesheet">
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-4249565-46"></script>
-	<script>
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());  gtag('config', 'UA-4249565-46');
-	</script>
 
 </head>
 
@@ -69,27 +62,7 @@
         	</div>
 		
 	</div><!--content-->
-	
-	<div style="width:110px; margin: 0px auto;">
-		<a href="#" title="Share on Facebook"    onclick="smallWindow('http://www.facebook.com/share.php?u=');"><img src="../../promo/fb.png" /></a>
-		<a href="#" title="Share on Google Plus" onclick="smallWindow('https://plus.google.com/share?url=');"><img src="../../promo/gp.png" /></a>
-		<a href="#" title="Share on Twitter"     onclick="smallWindow('http://twitter.com/share?url=');"><img src="../../promo/tw.png" /></a>
-		<script type="text/javascript">
-			function smallWindow(url)
-			{
-				var w = 640, h = 300;
-				window.open(url+"<? echo get_permalink($post); ?>", "Share", "width="+w+",height="+h+",left="+Math.floor((window.innerWidth-w)/2)+",top="+Math.floor((window.innerHeight-h)/2));
-			}
-		</script>
 	</div>
-	</div>
-	<div id="disqus_thread"></div>
-  	<script type="text/javascript">
- 	     var disqus_shortname = 'openshopblog'; // required: replace example with your forum shortname
-  	     (function() { var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   	         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-   	         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq); })();
-   	</script>
 	<!--main-->
 	<?//php get_sidebar(); ?>
 
