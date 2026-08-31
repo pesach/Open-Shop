@@ -10,33 +10,71 @@
   class OpenShopAgentAPI {
     constructor() {
       this.version = AGENT_VERSION;
-      this.pendingExecutions = new Map();
+      this.executionQueue = [];
+      this.activeExecution = null;
+      this.executionChannelDesynchronized = false;
+      this.exportFallbackTail = Promise.resolve();
+      this.responseWindow = this.getResponseWindow();
       this.initListeners();
     }
 
     initListeners() {
       window.addEventListener('message', (e) => {
-        if (!e.data) return;
+        if (!e.data || !this.isTrustedCommandEvent(e)) return;
 
         // Structured Agent Command Request
         if (typeof e.data === 'object' && e.data.type === 'openshop:agent-command') {
           this.handleAgentCommand(e);
         }
+      });
+
+      this.responseWindow.addEventListener('message', (e) => {
+        if (!this.isTrustedEngineResponse(e)) return;
 
         // Script completion "done" notification
         if (e.data === 'done' || e.data === 'saved') {
-          for (const [id, req] of this.pendingExecutions.entries()) {
-            req.resolve({ ok: true, message: e.data });
-            this.pendingExecutions.delete(id);
-          }
+          this.completeActiveExecution(e.data);
         }
       });
     }
 
+    getResponseWindow() {
+      if (window.parent === window) return window;
+
+      try {
+        if (window.parent.location.origin === window.location.origin) {
+          return window.parent;
+        }
+      } catch (e) {
+        // Cross-origin parents are intentionally not trusted.
+      }
+
+      return window;
+    }
+
+    isTrustedCommandEvent(event) {
+      const ownOrigin = window.location.origin;
+      if (ownOrigin === 'null' || event.origin === 'null' || event.origin !== ownOrigin) {
+        return false;
+      }
+
+      return event.source === window ||
+        event.source === window.parent ||
+        (window.opener && event.source === window.opener);
+    }
+
+    isTrustedEngineResponse(event) {
+      const ownOrigin = window.location.origin;
+      return ownOrigin !== 'null' &&
+        event.origin !== 'null' &&
+        event.origin === ownOrigin &&
+        event.source === window;
+    }
+
     async handleAgentCommand(event) {
       const { id, command, params } = event.data;
-      const source = event.source || window;
-      const origin = event.origin || '*';
+      const source = event.source;
+      const origin = event.origin;
 
       try {
         let result = null;
@@ -71,14 +109,14 @@
           id: id,
           ok: true,
           result: result
-        }, origin === 'null' ? '*' : origin);
+        }, origin);
       } catch (err) {
         source.postMessage({
           type: 'openshop:agent-response',
           id: id,
           ok: false,
           error: { message: err.message || String(err) }
-        }, origin === 'null' ? '*' : origin);
+        }, origin);
       }
     }
 
@@ -93,27 +131,48 @@
           return reject(new Error('Script must be a non-empty string'));
         }
 
-        const reqId = 'exec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        const timeout = setTimeout(() => {
-          if (this.pendingExecutions.has(reqId)) {
-            this.pendingExecutions.delete(reqId);
-            resolve({ ok: true, note: 'Execution dispatched (timeout reached without explicit done signal)' });
-          }
-        }, 3000);
+        if (window.location.origin === 'null') {
+          return reject(new Error('Script execution is unavailable from an opaque origin'));
+        }
 
-        this.pendingExecutions.set(reqId, {
-          resolve: (val) => {
-            clearTimeout(timeout);
-            resolve(val);
-          },
-          reject: (err) => {
-            clearTimeout(timeout);
-            reject(err);
-          }
-        });
+        if (this.executionChannelDesynchronized) {
+          return reject(new Error('Script execution channel is desynchronized; reload Open-Shop before retrying'));
+        }
 
-        window.postMessage(script, '*');
+        this.executionQueue.push({ script, resolve, reject, timeout: null });
+        this.dispatchNextExecution();
       });
+    }
+
+    dispatchNextExecution() {
+      if (this.activeExecution || this.executionQueue.length === 0) return;
+
+      const execution = this.executionQueue.shift();
+      this.activeExecution = execution;
+      execution.timeout = setTimeout(() => {
+        if (this.activeExecution !== execution) return;
+
+        this.activeExecution = null;
+        this.executionChannelDesynchronized = true;
+        execution.reject(new Error('Script execution timed out before a trusted completion signal'));
+
+        const error = new Error('Script execution queue cancelled because completion correlation was lost');
+        for (const queuedExecution of this.executionQueue.splice(0)) {
+          queuedExecution.reject(error);
+        }
+      }, 3000);
+
+      window.postMessage(execution.script, window.location.origin);
+    }
+
+    completeActiveExecution(message) {
+      const execution = this.activeExecution;
+      if (!execution) return;
+
+      clearTimeout(execution.timeout);
+      this.activeExecution = null;
+      execution.resolve({ ok: true, message });
+      this.dispatchNextExecution();
     }
 
     /**
@@ -166,19 +225,40 @@
      * Programmatically sets properties on a layer.
      */
     async setLayerProperties(target, properties = {}) {
+      if (!properties || typeof properties !== 'object' || Array.isArray(properties)) {
+        throw new TypeError('Layer properties must be an object');
+      }
+
       let script = '';
-      const targetSelector = typeof target === 'number'
-        ? `app.activeDocument.layers[${target}]`
-        : `app.activeDocument.layers.getByName("${target}")`;
+      let targetSelector;
+      if (typeof target === 'number') {
+        if (!Number.isInteger(target) || target < 0) {
+          throw new TypeError('Layer target index must be a non-negative integer');
+        }
+        targetSelector = `app.activeDocument.layers[${target}]`;
+      } else if (typeof target === 'string' && target.length > 0) {
+        targetSelector = `app.activeDocument.layers.getByName(${JSON.stringify(target)})`;
+      } else {
+        throw new TypeError('Layer target must be a non-negative integer or non-empty string');
+      }
 
       if (properties.opacity !== undefined) {
+        if (typeof properties.opacity !== 'number' || !Number.isFinite(properties.opacity)) {
+          throw new TypeError('Layer opacity must be a finite number');
+        }
         script += `${targetSelector}.opacity = ${Math.max(0, Math.min(100, properties.opacity))};\n`;
       }
       if (properties.visible !== undefined) {
-        script += `${targetSelector}.visible = ${Boolean(properties.visible)};\n`;
+        if (typeof properties.visible !== 'boolean') {
+          throw new TypeError('Layer visibility must be a boolean');
+        }
+        script += `${targetSelector}.visible = ${properties.visible};\n`;
       }
-      if (properties.name) {
-        script += `${targetSelector}.name = "${properties.name.replace(/"/g, '\\"')}";\n`;
+      if (properties.name !== undefined) {
+        if (typeof properties.name !== 'string') {
+          throw new TypeError('Layer name must be a string');
+        }
+        script += `${targetSelector}.name = ${JSON.stringify(properties.name)};\n`;
       }
 
       if (script) {
@@ -195,33 +275,61 @@
      */
     async exportDocument(format = 'png') {
       const fmt = String(format).toLowerCase();
+      if (typeof window.app === 'undefined' || !window.app.activeDocument) {
+        throw new Error('No active document available to export');
+      }
+
+      const doc = window.app.activeDocument;
+      if (typeof window.JP !== 'undefined' && typeof window.JP.YL === 'function' && doc.R) {
+        try {
+          const buffer = window.JP.YL(doc.R, fmt.toUpperCase());
+          if (buffer) {
+            return buffer;
+          }
+        } catch (e) {
+          // Fallback to script saveToOE
+        }
+      }
+
+      return this.enqueueExportFallback(fmt);
+    }
+
+    enqueueExportFallback(format) {
+      const run = () => this.performExportFallback(format);
+      const result = this.exportFallbackTail.then(run, run);
+      this.exportFallbackTail = result.catch(() => {});
+      return result;
+    }
+
+    performExportFallback(format) {
       return new Promise((resolve, reject) => {
-        if (typeof window.app === 'undefined' || !window.app.activeDocument) {
-          return reject(new Error('No active document available to export'));
-        }
-
-        const doc = window.app.activeDocument;
-        if (typeof window.JP !== 'undefined' && typeof window.JP.YL === 'function' && doc.R) {
-          try {
-            const buffer = window.JP.YL(doc.R, fmt.toUpperCase());
-            if (buffer) {
-              return resolve(buffer);
-            }
-          } catch (e) {
-            // Fallback to script saveToOE
-          }
-        }
-
-        // Script fallback via saveToOE
+        const responseWindow = this.responseWindow;
+        let settled = false;
+        let exportTimeout;
         const onBinaryResponse = (e) => {
-          if (e.data instanceof ArrayBuffer) {
-            window.removeEventListener('message', onBinaryResponse);
-            resolve(e.data);
-          }
+          if (!this.isTrustedEngineResponse(e) || !(e.data instanceof ArrayBuffer)) return;
+          finish(resolve, e.data);
         };
-        window.addEventListener('message', onBinaryResponse);
 
-        this.executeScript(`app.activeDocument.saveToOE("${fmt}");`).catch(reject);
+        const cleanup = () => {
+          clearTimeout(exportTimeout);
+          responseWindow.removeEventListener('message', onBinaryResponse);
+        };
+        const finish = (callback, value) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          callback(value);
+        };
+
+        responseWindow.addEventListener('message', onBinaryResponse);
+        exportTimeout = setTimeout(() => {
+          finish(reject, new Error('Document export timed out before a trusted binary response'));
+        }, 10000);
+
+        this.executeScript(`app.activeDocument.saveToOE(${JSON.stringify(format)});`).catch((error) => {
+          finish(reject, error);
+        });
       });
     }
 
@@ -230,17 +338,21 @@
      * @param {ArrayBuffer|Blob|string} data
      */
     async openFile(data) {
+      if (window.location.origin === 'null') {
+        throw new Error('Opening files through the message channel is unavailable from an opaque origin');
+      }
+
       if (data instanceof ArrayBuffer) {
-        window.postMessage(data, '*');
+        window.postMessage(data, window.location.origin);
         return true;
       } else if (data instanceof Blob) {
         const buffer = await data.arrayBuffer();
-        window.postMessage(buffer, '*');
+        window.postMessage(buffer, window.location.origin);
         return true;
       } else if (typeof data === 'string') {
         const res = await fetch(data);
         const buffer = await res.arrayBuffer();
-        window.postMessage(buffer, '*');
+        window.postMessage(buffer, window.location.origin);
         return true;
       }
       throw new Error('Unsupported file data type for openFile');
