@@ -128,7 +128,7 @@ async function build() {
     ''
   );
 
-  // 8. Enforce Blue Open-Shop logo on Home screen and configure Home buttons (New Project, Open, and Install Open-Shop with Favicon)
+  // 8. Enforce Blue Open-Shop logo and 3 Home buttons: New Project, Open From Computer, Install Open-Shop (with Blue Favicon)
   ppCode = ppCode.replace(
     'v.setAttribute("src",PIMG[n==0?"l"+"o"+"g"+"o":"b"+"o"+"t"+"t"+"o"+"m"]);',
     'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);'
@@ -143,27 +143,43 @@ async function build() {
   );
   ppCode = ppCode.replace(
     'n<[6,4,3][d7]',
-    'n<4'
+    'n<3'
+  );
+  ppCode = ppCode.replace(
+    /if\(n==0\)P\.data=\{S:G\.m\.bq,V\$:"newproject"\};[\s\S]*?this\.K\(P\);/,
+    'if(n==0){P.data={S:G.m.bq,V$:"newproject"};this.K(P);}else if(n==1){P.data={S:G.m.D$};this.K(P);}else if(n==2){var _p=window.deferredInstallPrompt||(window.app&&window.app.o?window.app.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;}else{alert("To install Open-Shop into your browser as a standalone app, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}}'
   );
   ppCode = ppCode.replace(
     'P=[[11,7],[1,6],[25,0],[0,17,6],"Generate","Video?"]',
-    'P=[[11,7],[1,6],[25,0],[0,17,6]]'
+    'P=[[11,7],[1,6],[0,17,6]]'
   );
   ppCode = ppCode.replace(
     'D="lrs/newlayer strg/tdevice pix_layer lrs/clipping lrs/newlayer panels/actions".split(" ");',
-    'D="lrs/newlayer strg/tdevice pix_layer promo_icon".split(" ");'
+    'D="lrs/newlayer strg/tdevice promo_icon".split(" ");'
   );
   ppCode = ppCode.replace(
     'y[n].innerHTML="<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000"+cf.get(P[n]);',
-    'y[n].innerHTML=(n==3?"<img src=\\"promo/icon.svg\\" style=\\"width:18px;height:18px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);'
+    'y[n].innerHTML=(n==2?"<img src=\\"promo/icon.svg\\" style=\\"width:20px;height:20px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);'
   );
   ppCode = ppCode.replace(
     'if(n==3)t.style.display="none";',
-    'if(n==2)t.style.display="none";'
+    '/* buttons visible */'
   );
   ppCode = ppCode.replace(
     'this.xX[3].style.display=j.iI?"inline-block":"none";',
-    'if(this.xX[2])this.xX[2].style.display="none";if(this.xX[3])this.xX[3].style.display=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)?"none":"inline-block";'
+    '/* install button is item 2 */'
+  );
+  ppCode = ppCode.replace(
+    'b.v(t,D+"margin:20px 10px 0 10px; cursor:pointer; padding:12px;");',
+    'b.v(t,D+"margin:16px 8px 0 8px; cursor:pointer; padding:10px 18px; white-space:nowrap;");'
+  );
+  ppCode = ppCode.replace(
+    'var r=Math.min(y*.9,600);',
+    'var r=Math.min(y*.95,860);'
+  );
+  ppCode = ppCode.replace(
+    /if\(T==G\.m\.uK\)if\(this\.o\.iI\)\{this\.o\.iI\.prompt\(\);[\s\S]*?this\.o\.iI=null\}/,
+    'if(T==G.m.uK){var _p=window.deferredInstallPrompt||(this.o?this.o.iI:null);if(_p){_p.prompt();if(_p.userChoice)_p.userChoice.then(function(res){if(res&&res.outcome==="accepted")console.log("Open-Shop PWA Installed");});window.deferredInstallPrompt=null;if(this.o)this.o.iI=null;}else{alert("To install Open-Shop, click the Install icon (⨁) in your browser address bar or menu (⋮ -> Install Open-Shop).");}}'
   );
 
   // 9. Assign window.app
@@ -174,7 +190,7 @@ async function build() {
 
   // 10. Remove PeaMark and About OpenShop from More menu
   ppCode = ppCode.replace(
-    'Y.items.push({name:"PeaMark"});Y.Ii.push({N:G.E.b,M:{S:G.m.bq,V$:"peamark"}});Y.items.push({name:"",d:function(Q,s){return s.h1?{Kg:"About "+["Photopea","Vectorpea"][d7],d:!0}:{Kg:"",d:!1}}});Y.Ii.push({N:G.E.b,M:{S:G.m.bq,V$:"aboutpp"}});',
+    /Y\.items\.push\(\{name:\s*"PeaMark"\}\);[\s\S]*?Y\.Ii\.push\(\{N:G\.E\.b,M:\{S:G\.m\.bq,V\$:"aboutpp"\}\}\);?/,
     '/* PeaMark and About removed from More menu */'
   );
 
@@ -344,7 +360,7 @@ select option {
 		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
-		<link rel="stylesheet" href="style/all.css?v=42" />
+		<link rel="stylesheet" href="style/all.css?v=47" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -352,7 +368,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=42"></script>
+		<script src="code/openshop-logger.js?v=47"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -362,17 +378,22 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=42"></script>
-		<script src="code/dbs.js?v=42"></script>
-		<script src="code/openshop.js?v=42"></script>
+		<script src="code/external/ext.js?v=47"></script>
+		<script src="code/dbs.js?v=47"></script>
+		<script src="code/openshop.js?v=47"></script>
 		
-		<script src="code/openshop-recovery.js?v=42"></script>
-		<script src="code/openshop-agent.js?v=42"></script>
-		<script src="code/openshop-memory.js?v=42"></script>
-		<script src="code/openshop-autosave.js?v=42"></script>
-		<script src="code/openshop-batch.js?v=42"></script>
+		<script src="code/openshop-recovery.js?v=47"></script>
+		<script src="code/openshop-agent.js?v=47"></script>
+		<script src="code/openshop-memory.js?v=47"></script>
+		<script src="code/openshop-autosave.js?v=47"></script>
+		<script src="code/openshop-batch.js?v=47"></script>
 
 		<script>
+			window.addEventListener('beforeinstallprompt', (e) => {
+				e.preventDefault();
+				window.deferredInstallPrompt = e;
+			});
+
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
 					navigator.serviceWorker.register('./sw.js').catch(() => {});
