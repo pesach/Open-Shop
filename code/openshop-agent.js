@@ -14,6 +14,7 @@
       this.activeExecution = null;
       this.executionChannelDesynchronized = false;
       this.exportFallbackTail = Promise.resolve();
+      this.querySequence = 0;
       this.responseWindow = this.getResponseWindow();
       this.initListeners();
     }
@@ -175,6 +176,55 @@
       this.dispatchNextExecution();
     }
 
+    queryRuntime(expression) {
+      if (!expression || typeof expression !== 'string') {
+        return Promise.reject(new Error('Runtime query must be a non-empty expression'));
+      }
+
+      const id = `query-${Date.now()}-${++this.querySequence}`;
+      let timeout;
+      let onMessage;
+      const response = new Promise((resolve, reject) => {
+        onMessage = (event) => {
+          if (!this.isTrustedEngineResponse(event) || typeof event.data !== 'string' || event.data[0] !== '{') return;
+          let parsed;
+          try {
+            parsed = JSON.parse(event.data);
+          } catch (error) {
+            return;
+          }
+          if (parsed.openshopQuery !== id) return;
+          clearTimeout(timeout);
+          this.responseWindow.removeEventListener('message', onMessage);
+          resolve(parsed.value);
+        };
+        this.responseWindow.addEventListener('message', onMessage);
+        timeout = setTimeout(() => {
+          this.responseWindow.removeEventListener('message', onMessage);
+          reject(new Error('Runtime query timed out before a trusted response'));
+        }, 4000);
+      });
+
+      const script = `app.echoToOE(JSON.stringify({openshopQuery:${JSON.stringify(id)},value:(${expression})}));`;
+      const execution = this.executeScript(script).catch((error) => {
+        clearTimeout(timeout);
+        this.responseWindow.removeEventListener('message', onMessage);
+        throw error;
+      });
+      return Promise.all([response, execution]).then(([value]) => value);
+    }
+
+    async getRuntimeDocumentInfo() {
+      const info = await this.queryRuntime('({count:app.documents.length,name:app.documents.length?app.activeDocument.name:null})');
+      if (!info || !Number.isInteger(info.count) || info.count < 1) return null;
+      const name = typeof info.name === 'string' && info.name ? info.name : 'Recovered-Session.psd';
+      const psdName = /\.psd$/i.test(name) ? name : `${name}.psd`;
+      return {
+        count: info.count,
+        name: psdName.replace(/(?:\.psd)+$/i, '.psd')
+      };
+    }
+
     /**
      * Retrieves structured info about the active document.
      */
@@ -275,12 +325,8 @@
      */
     async exportDocument(format = 'png') {
       const fmt = String(format).toLowerCase();
-      if (typeof window.app === 'undefined' || !window.app.activeDocument) {
-        throw new Error('No active document available to export');
-      }
-
-      const doc = window.app.activeDocument;
-      if (typeof window.JP !== 'undefined' && typeof window.JP.YL === 'function' && doc.R) {
+      const doc = typeof window.app !== 'undefined' ? window.app.activeDocument : null;
+      if (doc && typeof window.JP !== 'undefined' && typeof window.JP.YL === 'function' && doc.R) {
         try {
           const buffer = window.JP.YL(doc.R, fmt.toUpperCase());
           if (buffer) {
@@ -291,7 +337,16 @@
         }
       }
 
+      const info = await this.getRuntimeDocumentInfo();
+      if (!info) throw new Error('No active document available to export');
       return this.enqueueExportFallback(fmt);
+    }
+
+    async exportRecoverySnapshot() {
+      const info = await this.getRuntimeDocumentInfo();
+      if (!info) throw new Error('No active document available to export');
+      const buffer = await this.enqueueExportFallback('psd');
+      return { buffer, name: info.name };
     }
 
     enqueueExportFallback(format) {

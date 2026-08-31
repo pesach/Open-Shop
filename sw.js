@@ -17,7 +17,6 @@ const CORE_ASSETS = [
   './code/openshop-recovery.js',
   './code/openshop-agent.js',
   './code/openshop-memory.js',
-  './code/openshop-autosave.js',
   './code/openshop-batch.js',
   './promo/icon.svg',
   './promo/logo.svg',

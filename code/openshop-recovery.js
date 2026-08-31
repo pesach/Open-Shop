@@ -12,6 +12,7 @@
 
   let dbPromise = null;
   let autosaveTimer = null;
+  let autosaveInProgress = false;
 
   // Open / Initialize IndexedDB
   function getDB() {
@@ -41,25 +42,34 @@
   }
 
   // Save active document state
+  function isPsdBuffer(buffer) {
+    if (!(buffer instanceof ArrayBuffer) || buffer.byteLength < 4) return false;
+    const bytes = new Uint8Array(buffer, 0, 4);
+    return bytes[0] === 0x38 && bytes[1] === 0x42 && bytes[2] === 0x50 && bytes[3] === 0x53;
+  }
+
   async function saveSessionSnapshot(buffer, meta) {
-    try {
-      const db = await getDB();
-      if (!db) return;
-
-      const record = {
-        id: 'last_active_session',
-        name: meta.name || 'Untitled-Recovered.psd',
-        timestamp: Date.now(),
-        size: buffer.byteLength,
-        buffer: buffer
-      };
-
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.put(record);
-    } catch (err) {
-      console.warn('[Open-Shop Recovery] Failed to save session snapshot:', err);
+    if (!isPsdBuffer(buffer)) {
+      throw new Error('Recovery export was not a valid PSD buffer');
     }
+    const db = await getDB();
+    if (!db) throw new Error('IndexedDB is unavailable for recovery storage');
+
+    const record = {
+      id: 'last_active_session',
+      name: meta.name || 'Untitled-Recovered.psd',
+      timestamp: Date.now(),
+      size: buffer.byteLength,
+      buffer: buffer
+    };
+
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(record);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error || new Error('Recovery snapshot transaction failed'));
+      tx.onabort = () => reject(tx.error || new Error('Recovery snapshot transaction was aborted'));
+    });
   }
 
   // Retrieve saved snapshot
@@ -136,11 +146,16 @@
     ].join(';');
     restoreBtn.onmouseover = () => restoreBtn.style.background = '#1d4ed8';
     restoreBtn.onmouseout = () => restoreBtn.style.background = '#2563eb';
-    restoreBtn.onclick = () => {
-      if (session.buffer) {
-        window.postMessage(session.buffer, '*');
+    restoreBtn.onclick = async () => {
+      try {
+        if (!isPsdBuffer(session.buffer) || !window.OpenShopAgent) {
+          throw new Error('The saved recovery snapshot is unavailable');
+        }
+        await window.OpenShopAgent.openFile(session.buffer);
+        banner.remove();
+      } catch (err) {
+        console.warn('[Open-Shop Recovery] Failed to restore session:', err);
       }
-      banner.remove();
     };
 
     const dismissBtn = document.createElement('button');
@@ -185,19 +200,26 @@
   }
 
   // Periodic Autosave Check
-  function triggerAutosave() {
+  async function triggerAutosave() {
+    if (autosaveInProgress) return false;
+    autosaveInProgress = true;
     try {
-      if (typeof window.app !== 'undefined' && window.app.activeDocument) {
-        const doc = window.app.activeDocument;
-        if (typeof window.JP !== 'undefined' && typeof window.JP.YL === 'function' && doc.R) {
-          const buffer = window.JP.YL(doc.R, 'PSD');
-          if (buffer && buffer.byteLength > 0) {
-            saveSessionSnapshot(buffer, { name: doc.R.name || 'Project.psd' });
-          }
-        }
+      if (!window.OpenShopAgent || typeof window.OpenShopAgent.exportRecoverySnapshot !== 'function') {
+        throw new Error('OpenShopAgent recovery export is unavailable');
       }
+      const exported = await window.OpenShopAgent.exportRecoverySnapshot();
+      await saveSessionSnapshot(exported.buffer, { name: exported.name || 'Recovered-Session.psd' });
+      if (window.OpenShopLogger && typeof window.OpenShopLogger.log === 'function') {
+        window.OpenShopLogger.log('info', 'OpenShopRecovery', `Snapshot saved for "${exported.name || 'Recovered session'}"`);
+      }
+      return true;
     } catch (e) {
-      // Safe non-blocking catch
+      if (!/No active document/.test(e.message || '')) {
+        console.warn('[Open-Shop Recovery] Auto-save skipped:', e);
+      }
+      return false;
+    } finally {
+      autosaveInProgress = false;
     }
   }
 
@@ -211,7 +233,9 @@
       }
 
       // Start periodic autosave timer
-      autosaveTimer = setInterval(triggerAutosave, AUTOSAVE_INTERVAL_MS);
+      autosaveTimer = setInterval(() => {
+        if (document.visibilityState !== 'hidden') triggerAutosave();
+      }, AUTOSAVE_INTERVAL_MS);
 
       // Expose recovery methods
       window.OpenShopRecovery = {
