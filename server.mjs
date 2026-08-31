@@ -146,18 +146,14 @@ const server = http.createServer((req, res) => {
       }
 
       if (cleanUrl === '/api/process') {
-        const { action, sourceFormat, targetFormat, dataBase64 } = data;
+        const { dataBase64 } = data;
         if (!dataBase64) {
           return sendJson(res, 400, { ok: false, error: 'Missing dataBase64' });
         }
 
-        // Return processed binary
-        return sendJson(res, 200, {
-          ok: true,
-          action: action || 'convert',
-          sourceFormat,
-          targetFormat,
-          resultBase64: dataBase64
+        return sendJson(res, 501, {
+          ok: false,
+          error: 'Headless file conversion is not implemented. Use the browser editor to export the document.'
         });
       }
 
