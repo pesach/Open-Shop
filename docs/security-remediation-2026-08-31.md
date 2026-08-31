@@ -11,7 +11,7 @@ Verified the eleven externally reported claims against the repository before cha
 | 1 | Confirmed, fixed | The server joined a decoded request path to the repository root without proving containment. The server now rejects malformed, traversal, dotfile, and canonical junction/symlink escapes. |
 | 2 | Confirmed, fixed | The public agent bridge and the generated editor command handler accepted messages without origin/source validation. Both sides now require same-origin, non-opaque messages from a trusted window and use an exact response origin. |
 | 3 | Confirmed, fixed | `setLayerProperties` interpolated attacker-controlled strings into editor script source. Script string values are now produced with `JSON.stringify`, with input type validation. |
-| 4 | Confirmed, fixed | Build patches used unchecked exact replacements. Required patches now report match counts and abort the build before writing generated output when an anchor is missing. Seven already-stale anchors are now surfaced explicitly. |
+| 4 | Confirmed, fixed | Build patches used unchecked exact replacements. Required patches now report match counts and abort the build before writing generated output when an anchor is missing. Six already-stale anchors are now surfaced explicitly. |
 | 5 | Confirmed, mitigated | A completion message resolved every pending execution. Executions are now serialized to one in flight; timeouts reject and mark the uncorrelated legacy channel desynchronized. True request IDs require changing the legacy editor protocol. |
 | 6 | Confirmed, fixed | Export fallback listeners were removed only on success and had no timeout. Export operations are serialized and clean up listeners and timers on success, failure, or timeout. |
 | 7 | Rejected | The current service worker is registered by `index.html`, precaches an app shell, and has runtime caching/fallback behavior. It is not an unused network-only worker. No change made. |
@@ -24,7 +24,7 @@ Verified the eleven externally reported claims against the repository before cha
 
 - `4164f5c` — hardened local server path boundaries, canonical containment, local-only default binding, request-body limits, malformed input handling, cache policy, and removal of wildcard CORS.
 - `33a3504` — hardened the public agent bridge, safely encoded script values, serialized legacy commands/exports, and guaranteed timeout cleanup.
-- `05b9c56` + `5609bd7` — hardened upstream downloads and required build patches, plus secured the generated editor message handler. These commits are isolated on `codex/fix-build-runtime` until unrelated uncommitted edits in the shared checkout are resolved.
+- `60de975` + `5279537` — hardened upstream downloads and required build patches, plus secured the generated editor message handler. The fixes were rebased over and preserve the concurrent PWA install-button work before integration on `main`.
 
 ## Verification performed
 
@@ -32,12 +32,12 @@ Verified the eleven externally reported claims against the repository before cha
 - Server runtime probes passed for normal files and status, and returned the intended `400`/`403`/`413` results for malformed URLs, traversal/dotfiles, invalid JSON, and oversized bodies.
 - The fixed server bound to `127.0.0.1` by default, honored an explicit `HOST` override, emitted no wildcard CORS header, and used the intended cache headers.
 - Agent bridge existing regression suite: 29/29 passed. This was an existing suite; no tests were created.
-- Build verification intentionally exits nonzero and lists seven stale required anchors instead of silently producing a partially patched bundle.
+- Build verification intentionally exits nonzero and lists six stale required anchors instead of silently producing a partially patched bundle.
 - `git diff --check` passed in all three isolated fix branches.
 
 ## Known build blockers now exposed
 
-The current upstream/minified input no longer matches these required patch anchors: capability-prompt suppression, two telemetry/external-routing hooks, Install OpenShop visibility, `window.app` exposure, and PeaMark/About removal. The build is deliberately blocked until each behavior is re-derived from the current upstream bundle and verified.
+The current upstream/minified input no longer matches these six required patch anchors: capability-prompt suppression, `g7.event`, `g7.kH`, `g7.xt`, Install OpenShop visibility, and `window.app` exposure. The build is deliberately blocked until each behavior is re-derived from the current upstream bundle and verified.
 
 ## Mistakes and lessons
 
