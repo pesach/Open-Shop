@@ -14059,8 +14059,8 @@ for(var n=0;n<2;n++){var D="width:100%; filter: drop-shadow(4px 6px 4px rgba(0,0
 if(n==1)D+="position:absolute;  left:0; bottom:0;";var v=b.r("img");if(n==0||d7<2)P.appendChild(v);v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);
 b.v(v,D);if(n==0){this.aBW=v;v.setAttribute("src","promo/logo.svg");v.style.width="360px";v.style.height="82px";v.style.objectFit="contain";v.style.marginBottom="24px";}else this.aoK=v}this.xX=[];this.am4=[];D="display:inline-block;  font-size:1.25em; border:1px solid #aaa;  border-radius:6px;";
 var r=this.AM.bind(this),T=b.r("div");P.appendChild(T);b.v(T,"margin:0px;  text-align:center");for(var n=0;
-n<2;n++){var t=b.r("span","bhover");this.xX.push(t);b.v(t,D+"margin:20px 10px 0 10px; cursor:pointer; padding:12px;");
-t.addEventListener("click",r,!1);T.appendChild(t);if(n==3)t.style.display="none";if(n>=4&&d7==0&&ke.wN())t.style.display="none"}if(d7==2){b.Sm(P);
+n<4;n++){var t=b.r("span","bhover");this.xX.push(t);b.v(t,D+"margin:20px 10px 0 10px; cursor:pointer; padding:12px;");
+t.addEventListener("click",r,!1);T.appendChild(t);if(n==2)t.style.display="none";if(n>=4&&d7==0&&ke.wN())t.style.display="none"}if(d7==2){b.Sm(P);
 T=b.r("div");P.appendChild(T);T.textContent="Examples:";b.v(T,"text-align:center;");var j="display:inline-block;  font-size:1em; border:1px solid #aaa;  border-radius:6px;  margin:12px 0 0 12px; cursor:pointer; padding:6px 8px;";
 for(var n=0;n<SNDS.length;n++){var t=b.r("span","bhover");this.am4.push(t);b.v(t,j);t.addEventListener("click",r,!1);
 t.textContent=SNDS[n][0];T.appendChild(t)}}b.Sm(P);var k=this.aEu=b.r("div");b.v(k,D+"padding:60px 0;  margin-top:30px;  text-align:center; opacity:0.3; width:100%;");
@@ -14075,9 +14075,9 @@ dm.Sw.prototype.AM=function(y){var n=this.xX.indexOf(y.currentTarget),P=new cD(G
 var D=dW.l1(SNDS[n][1]),v=new aP;v.name=SNDS[n][0]+".mid";dW.S_.oA(D,v);P.data={S:G.m.mg,M1:v}}else{if(n==0)P.data={S:G.m.bq,V$:"newproject"};
 if(n==1)P.data={S:G.m.D$};if(n==2)P.data=d7==2?{S:G.m.dU,link:"//www.openshop.com/learn"}:{S:G.m.bq,V$:"res0"};
 if(n==3)P.data={S:G.m.uK};if(n==4)P.data={S:G.m.bq,V$:"aigen"};if(n==5)P.data={S:G.m.dU,link:"//www.openshop.com/learn/video"}}this.K(P);
-if(n==3)this.W()};dm.Sw.prototype.W=function(){var y=this.xX,P=[[11,7],[1,6]],D="lrs/newlayer strg/tdevice".split(" ");
+if(n==3)this.W()};dm.Sw.prototype.W=function(){var y=this.xX,P=[[11,7],[1,6],[25,0],[0,17,6]],D="lrs/newlayer strg/tdevice pix_layer promo_icon".split(" ");
 if(d7==1)P[3]="Install OpenShop";if(d7==2){P[2]="How Music Works";D[2]="panels/info"}for(var n=0;n<y.length;
-n++)y[n].innerHTML="<span style=\"vertical-align:middle\">"+b.ss(D[n],null,"autoscale")+"</span>\u2000"+cf.get(P[n]);
+n++)y[n].innerHTML=(n==3?"<img src=\"promo/icon.svg\" style=\"width:18px;height:18px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\" />":"<span style=\"vertical-align:middle\">"+b.ss(D[n],null,"autoscale")+"</span>\u2000")+cf.get(P[n]);
 var v="l"+"o"+"g"+"o",r=v+"_"+["pp","vp","jp"][d7],T=new Date;if(d7==0&&T.getMonth()==3&&T.getDate()==1)r="lo"+"go_cuc"+"umber";
 if(PIMG[v])r=v;var t=cf.get([0,17,7]);if(d7==2)t+=": MIDI / Guitar Pro / Musescore / MusicXML / SoundFonts";
 this.aEu.textContent=t;this.aBW.setAttribute("src","promo/logo.svg");this.aBW.style.width="360px";this.aBW.style.height="82px";this.aBW.style.objectFit="contain";this.aBW.style.marginBottom="24px";this.aoK.setAttribute("src",PIMG["b"+"o"+"t"+"t"+"o"+"m"]);

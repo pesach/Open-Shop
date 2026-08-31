@@ -128,7 +128,7 @@ async function build() {
     ''
   );
 
-  // 8. Enforce Blue Open-Shop logo on Home screen and keep only New Project and Open From Computer
+  // 8. Enforce Blue Open-Shop logo on Home screen and configure Home buttons (New Project, Open, and Install Open-Shop with Favicon)
   ppCode = ppCode.replace(
     'v.setAttribute("src",PIMG[n==0?"l"+"o"+"g"+"o":"b"+"o"+"t"+"t"+"o"+"m"]);',
     'v.setAttribute("src",n==0?"promo/logo.svg":PIMG.bottom);'
@@ -143,19 +143,27 @@ async function build() {
   );
   ppCode = ppCode.replace(
     'n<[6,4,3][d7]',
-    'n<2'
+    'n<4'
   );
   ppCode = ppCode.replace(
     'P=[[11,7],[1,6],[25,0],[0,17,6],"Generate","Video?"]',
-    'P=[[11,7],[1,6]]'
+    'P=[[11,7],[1,6],[25,0],[0,17,6]]'
   );
   ppCode = ppCode.replace(
     'D="lrs/newlayer strg/tdevice pix_layer lrs/clipping lrs/newlayer panels/actions".split(" ");',
-    'D="lrs/newlayer strg/tdevice".split(" ");'
+    'D="lrs/newlayer strg/tdevice pix_layer promo_icon".split(" ");'
+  );
+  ppCode = ppCode.replace(
+    'y[n].innerHTML="<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000"+cf.get(P[n]);',
+    'y[n].innerHTML=(n==3?"<img src=\\"promo/icon.svg\\" style=\\"width:18px;height:18px;vertical-align:middle;display:inline-block;border-radius:4px;margin-right:6px;\\" />":"<span style=\\"vertical-align:middle\\">"+b.ss(D[n],null,"autoscale")+"</span>\\u2000")+cf.get(P[n]);'
+  );
+  ppCode = ppCode.replace(
+    'if(n==3)t.style.display="none";',
+    'if(n==2)t.style.display="none";'
   );
   ppCode = ppCode.replace(
     'this.xX[3].style.display=j.iI?"inline-block":"none";',
-    '/* install & templates removed */'
+    'if(this.xX[2])this.xX[2].style.display="none";if(this.xX[3])this.xX[3].style.display=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)?"none":"inline-block";'
   );
 
   // 9. Assign window.app
@@ -336,7 +344,7 @@ select option {
 		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
-		<link rel="stylesheet" href="style/all.css?v=40" />
+		<link rel="stylesheet" href="style/all.css?v=42" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -344,7 +352,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=40"></script>
+		<script src="code/openshop-logger.js?v=42"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -354,15 +362,15 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=40"></script>
-		<script src="code/dbs.js?v=40"></script>
-		<script src="code/openshop.js?v=40"></script>
+		<script src="code/external/ext.js?v=42"></script>
+		<script src="code/dbs.js?v=42"></script>
+		<script src="code/openshop.js?v=42"></script>
 		
-		<script src="code/openshop-recovery.js?v=40"></script>
-		<script src="code/openshop-agent.js?v=40"></script>
-		<script src="code/openshop-memory.js?v=40"></script>
-		<script src="code/openshop-autosave.js?v=40"></script>
-		<script src="code/openshop-batch.js?v=40"></script>
+		<script src="code/openshop-recovery.js?v=42"></script>
+		<script src="code/openshop-agent.js?v=42"></script>
+		<script src="code/openshop-memory.js?v=42"></script>
+		<script src="code/openshop-autosave.js?v=42"></script>
+		<script src="code/openshop-batch.js?v=42"></script>
 
 		<script>
 			if ('serviceWorker' in navigator) {
