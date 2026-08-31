@@ -194,5 +194,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Open-Shop Editor & Headless API running at http://${HOST}:${PORT}`);
+  const address = server.address();
+  const boundPort = typeof address === 'object' && address ? address.port : PORT;
+  console.log(`Open-Shop Editor & Headless API running at http://${HOST}:${boundPort}`);
 });

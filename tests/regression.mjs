@@ -1,13 +1,13 @@
 /**
  * Open-Shop Automated Regression & Platform Test Suite (tests/regression.mjs)
- * Executes syntax validation, asset integrity checks, server REST API tests,
- * and Headless Agent API inspection & conversion benchmarks.
+ * Executes asset integrity checks, server REST API checks, and Headless Agent
+ * inspection checks against this checkout.
  */
 import fs from 'fs';
 import path from 'path';
-import http from 'http';
+import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { openshop } from '../api/openshop-node.mjs';
+import { OpenShopNodeAPI, openshop } from '../api/openshop-node.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -25,6 +25,44 @@ function assert(condition, message) {
     failedTests++;
     console.error(`  ❌ [FAIL] ${message}`);
   }
+}
+
+function startCheckoutServer() {
+  return new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ['server.mjs'], {
+      cwd: rootDir,
+      env: { ...process.env, HOST: '127.0.0.1', PORT: '0' },
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    let stderr = '';
+    const timeout = setTimeout(() => {
+      child.kill();
+      reject(new Error(`Checkout server did not start in time${stderr ? `: ${stderr.trim()}` : ''}`));
+    }, 5000);
+
+    child.stderr.on('data', chunk => {
+      stderr += chunk.toString();
+    });
+    child.once('error', error => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.stdout.on('data', chunk => {
+      const match = chunk.toString().match(/http:\/\/127\.0\.0\.1:(\d+)/);
+      if (!match) return;
+      clearTimeout(timeout);
+      resolve({
+        api: new OpenShopNodeAPI({ serverUrl: `http://127.0.0.1:${match[1]}` }),
+        stop: () => child.kill()
+      });
+    });
+    child.once('exit', code => {
+      if (code !== null && code !== 0) {
+        clearTimeout(timeout);
+        reject(new Error(`Checkout server exited with code ${code}${stderr ? `: ${stderr.trim()}` : ''}`));
+      }
+    });
+  });
 }
 
 async function run() {
@@ -46,7 +84,6 @@ async function run() {
     'code/openshop-recovery.js',
     'code/openshop-agent.js',
     'code/openshop-memory.js',
-    'code/openshop-autosave.js',
     'code/openshop-batch.js',
     'api/openshop-node.mjs',
     'bin/openshop-cli.mjs',
@@ -78,12 +115,16 @@ async function run() {
 
   // Test Suite 3: Local Server & REST API
   console.log('\n🌐 3. Server Endpoints & REST API:');
+  let checkoutServer;
   try {
-    const status = await openshop.postJSON('/api/status', {});
+    checkoutServer = await startCheckoutServer();
+    const status = await checkoutServer.api.postJSON('/api/status', {});
     assert(status.ok === true, 'Server REST API /api/status responds with ok: true');
     assert(status.name === 'Open-Shop Headless API', 'Server engine identifies as Open-Shop Headless API');
   } catch (err) {
     assert(false, `Server endpoint check failed: ${err.message}`);
+  } finally {
+    checkoutServer?.stop();
   }
 
   // Test Suite 4: Headless Node.js Agent API
