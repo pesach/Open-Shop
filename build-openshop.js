@@ -335,6 +335,18 @@ async function build() {
     'if(b.yP(this.mj.$))$+=Math.ceil((this.mj.$&&this.mj.$.getBoundingClientRect().height)||38);if(b.yP(this.Kn.$))$+=Math.ceil((this.Kn.$&&this.Kn.$.getBoundingClientRect().height)||37);',
     'dynamic topbar and confbar height'
   );
+  ppCode = requiredReplace(
+    ppCode,
+    ',{"name":"Peas Maker","url":"//www.openshop.com/plugins/peasmaker"}',
+    '',
+    'remove Peas Maker plugin'
+  );
+  ppCode = requiredReplace(
+    ppCode,
+    '{name:[0,8],items:[{name:[0,14],KU:!0,sub:[]},{name:"Plugins",KU:!0}],Ii:[{sub:[]},{N:G.E.b,M:{S:G.m.bq,V$:"res1"}}]}',
+    '{name:[0,8],items:[{name:[0,14],KU:!0,sub:[]}],Ii:[{sub:[]}]}',
+    'remove Plugins menu item'
+  );
 
   assertRequiredPatches();
 
@@ -500,7 +512,7 @@ select option {
 		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="promo/icon512.png" />
 		
-		<link rel="stylesheet" href="style/all.css?v=47" />
+		<link rel="stylesheet" href="style/all.css?v=50" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -508,7 +520,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=49"></script>
+		<script src="code/openshop-logger.js?v=50"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -518,15 +530,15 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=49"></script>
-		<script src="code/dbs.js?v=49"></script>
-		<script src="code/openshop.js?v=49"></script>
+		<script src="code/external/ext.js?v=50"></script>
+		<script src="code/dbs.js?v=50"></script>
+		<script src="code/openshop.js?v=50"></script>
 		
-		<script src="code/openshop-recovery.js?v=49"></script>
-		<script src="code/openshop-agent.js?v=49"></script>
-		<script src="code/openshop-memory.js?v=49"></script>
-		<script src="code/openshop-autosave.js?v=49"></script>
-		<script src="code/openshop-batch.js?v=49"></script>
+		<script src="code/openshop-recovery.js?v=50"></script>
+		<script src="code/openshop-agent.js?v=50"></script>
+		<script src="code/openshop-memory.js?v=50"></script>
+		<script src="code/openshop-autosave.js?v=50"></script>
+		<script src="code/openshop-batch.js?v=50"></script>
 
 		<script>
 			window.addEventListener('beforeinstallprompt', (e) => {

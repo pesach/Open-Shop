@@ -1,39 +1,74 @@
 /**
  * Open-Shop Node.js Headless Agent API (api/openshop-node.mjs)
  * Allows any AI agent or Node.js program to perform graphic operations,
- * PSD inspection, resizing, and conversions programmatically without a browser UI.
+ * PSD inspection, .openshop serialization, ExtendScript execution, and format conversions.
  */
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
+await import('../code/openshop-format.js');
+await import('../code/openshop-color.js');
+await import('../code/openshop-vector.js');
+await import('../code/openshop-ps-compat.js');
+
+const formatEngine = globalThis.OpenShopFormat;
+const colorEngine = globalThis.OpenShopColor;
+const vectorEngine = globalThis.OpenShopVector;
+const psCompat = globalThis.PhotoshopCompat;
 
 export class OpenShopNodeAPI {
   constructor(options = {}) {
     this.serverUrl = options.serverUrl || 'http://localhost:8888';
+    this.color = colorEngine;
+    this.vector = vectorEngine;
+    this.ps = psCompat;
+    this.format = formatEngine;
   }
 
   /**
-   * Inspect a graphic file (PSD, PNG, JPG, WebP, SVG)
-   * @param {string} filePath
+   * Inspect a graphic file (PSD, PNG, JPG, WebP, SVG, OPENSHOP)
+   * @param {string|Buffer} input
    * @returns {Promise<Object>}
    */
-  async inspect(filePath) {
-    const resolvedPath = path.resolve(filePath);
-    if (!fs.existsSync(resolvedPath)) {
-      throw new Error(`File not found: ${filePath}`);
+  async inspect(input) {
+    let resolvedPath = null;
+    let buffer = null;
+    let ext = 'psd';
+    let sizeBytes = 0;
+
+    if (typeof input === 'string') {
+      resolvedPath = path.resolve(input);
+      if (!fs.existsSync(resolvedPath)) {
+        throw new Error(`File not found: ${input}`);
+      }
+      const stat = fs.statSync(resolvedPath);
+      sizeBytes = stat.size;
+      ext = path.extname(resolvedPath).toLowerCase().replace('.', '');
+      buffer = fs.readFileSync(resolvedPath);
+    } else if (Buffer.isBuffer(input) || input instanceof Uint8Array) {
+      buffer = Buffer.from(input);
+      sizeBytes = buffer.length;
+    } else {
+      throw new Error('Invalid inspect input: must be file path or Buffer');
     }
 
-    const stat = fs.statSync(resolvedPath);
-    const ext = path.extname(resolvedPath).toLowerCase().replace('.', '');
-    const buffer = fs.readFileSync(resolvedPath);
-
-    // Basic Header Inspector for PSD & Image files
     let width = null;
     let height = null;
     let colorMode = null;
     let channels = null;
 
-    if (ext === 'psd' && buffer.length >= 26) {
+    if (ext === 'openshop' || (buffer.length > 8 && buffer.toString('utf8', 0, 8) === '{"magic"')) {
+      try {
+        const decoded = formatEngine.decode(buffer);
+        width = decoded.width;
+        height = decoded.height;
+        colorMode = decoded.colorSpace || 'sRGB';
+        channels = 4;
+        ext = 'openshop';
+      } catch (e) {
+        // Fallback
+      }
+    } else if (ext === 'psd' && buffer.length >= 26) {
       const signature = buffer.toString('utf8', 0, 4);
       if (signature === '8BPS') {
         channels = buffer.readUInt16BE(12);
@@ -53,17 +88,24 @@ export class OpenShopNodeAPI {
 
     return {
       success: true,
-      file: path.basename(resolvedPath),
+      file: resolvedPath ? path.basename(resolvedPath) : 'memory_buffer',
       path: resolvedPath,
       format: ext.toUpperCase(),
-      sizeBytes: stat.size,
-      sizeFormatted: (stat.size / 1024).toFixed(1) + ' KB',
+      sizeBytes,
+      sizeFormatted: (sizeBytes / 1024).toFixed(1) + ' KB',
       width,
       height,
       colorMode,
-      channels,
-      lastModified: stat.mtime
+      channels
     };
+  }
+
+  /**
+   * Run Photoshop ExtendScript JavaScript code
+   * @param {string} script
+   */
+  evalPhotoshopScript(script) {
+    return psCompat.evalScript(script);
   }
 
   /**
@@ -84,7 +126,6 @@ export class OpenShopNodeAPI {
     const outExt = path.extname(resolvedOut).toLowerCase().replace('.', '');
     const inBuffer = fs.readFileSync(resolvedIn);
 
-    // Send to local OpenShop server conversion worker
     const payload = {
       action: 'convert',
       filename: path.basename(resolvedIn),
@@ -111,9 +152,6 @@ export class OpenShopNodeAPI {
     };
   }
 
-  /**
-   * Helper to POST JSON to the Open-Shop server
-   */
   postJSON(endpoint, data) {
     return new Promise((resolve, reject) => {
       const url = new URL(endpoint, this.serverUrl);
@@ -146,3 +184,6 @@ export class OpenShopNodeAPI {
 }
 
 export const openshop = new OpenShopNodeAPI();
+export const OpenShopHeadless = openshop;
+export { formatEngine, colorEngine, vectorEngine, psCompat };
+export default openshop;

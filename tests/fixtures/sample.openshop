@@ -1,0 +1,28 @@
+{
+  "magic": "OPENSHOP",
+  "version": 1,
+  "createdAt": "2026-08-31T14:37:51.667Z",
+  "dimensions": {
+    "width": 1920,
+    "height": 1080,
+    "resolution": 72
+  },
+  "colorSpace": "sRGB",
+  "bitDepth": 8,
+  "layers": [
+    {
+      "id": "bg_1",
+      "name": "Background",
+      "visible": true,
+      "opacity": 100,
+      "blendMode": "normal"
+    },
+    {
+      "id": "shape_1",
+      "name": "Vector Icon",
+      "visible": true,
+      "opacity": 90,
+      "blendMode": "multiply"
+    }
+  ]
+}

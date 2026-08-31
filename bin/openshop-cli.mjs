@@ -4,9 +4,15 @@
  * Usage:
  *   node bin/openshop-cli.mjs inspect <file>
  *   node bin/openshop-cli.mjs convert <input> <output>
+ *   node bin/openshop-cli.mjs script <scriptString>
+ *   node bin/openshop-cli.mjs corpus
+ *   node bin/openshop-cli.mjs fuzz
  *   node bin/openshop-cli.mjs status
  */
+import fs from 'fs';
 import { openshop } from '../api/openshop-node.mjs';
+import { generateCorpus } from '../tools/corpus-gen.mjs';
+import { runFuzzSuite } from '../tools/fuzz-test.mjs';
 
 const [,, cmd, ...args] = process.argv;
 
@@ -16,9 +22,12 @@ async function main() {
 Open-Shop Headless Agent CLI
 ============================
 Commands:
-  inspect <filePath>              Inspect PSD / image layers, metadata, and dimensions
+  inspect <filePath>               Inspect PSD / .openshop / image metadata and dimensions
   convert <inputFile> <outputFile> Convert image format headlessly
-  status                          Check local Open-Shop engine server status
+  script <scriptCodeOrFile>        Execute Photoshop ExtendScript code on headless DOM
+  corpus                           Generate deterministic multi-format test corpus
+  fuzz                             Run parser & decoder fuzz / resilience test suite
+  status                           Check local Open-Shop engine server status
     `);
     process.exit(0);
   }
@@ -39,6 +48,28 @@ Commands:
         console.log(`Converting "${input}" -> "${output}"...`);
         const res = await openshop.convert(input, output);
         console.log('Conversion successful:', res);
+        break;
+      }
+
+      case 'script': {
+        let script = args.join(' ');
+        if (!script) throw new Error('Specify ExtendScript code or script file path');
+        if (fs.existsSync(script)) {
+          script = fs.readFileSync(script, 'utf8');
+        }
+        const result = openshop.evalPhotoshopScript(script);
+        console.log('Script execution result:', result);
+        break;
+      }
+
+      case 'corpus': {
+        generateCorpus();
+        break;
+      }
+
+      case 'fuzz': {
+        const fuzzRes = await runFuzzSuite();
+        if (fuzzRes.passed !== fuzzRes.total) process.exit(1);
         break;
       }
 
