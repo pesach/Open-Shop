@@ -44,7 +44,7 @@ Constraints: isolated worktrees for code edits; no new tests, mocks, fakes, or p
 - `PORT=0` correctly requests an OS-assigned port, but the server logged the requested value instead of `server.address().port`. The harness initially connected to port 80; the server now reports its actual bound port.
 - Deleting a service-worker precache entry without updating `sw.js` can silently degrade installation because the worker catches `cache.addAll()` failure. Loader and precache inventories must change together.
 - A first recovery design patched minified core internals and expanded to six files. Reusing the verified public scripting bridge kept the implementation to five files and made it survive future generated-bundle rebuilds.
-- Two temporary isolated Chrome profile directories created during verification remain under the Windows temp directory because recursive cleanup was blocked: `openshop-recovery-chrome-2` and `openshop-recovery-chrome-3`.
+- Two temporary isolated Chrome profiles initially resisted cleanup. After validating their exact paths under the Windows temp directory, both verification-only profiles were removed.
 
 ### Remaining test limitation
 
