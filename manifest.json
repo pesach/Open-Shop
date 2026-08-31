@@ -1,16 +1,29 @@
 {
-  "name": "Open-Shop",
+  "name": "Open-Shop | Online Image Editor",
   "short_name": "Open-Shop",
-  "description": "Professional image editing in your browser. PSD, XCF, Sketch, and raster formats.",
-  "start_url": "index.html",
+  "description": "Advanced in-browser raster and vector graphics editor",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#202020",
-  "theme_color": "#202020",
+  "background_color": "#252525",
+  "theme_color": "#474747",
   "icons": [
+    {
+      "src": "promo/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "promo/icon256.png",
       "sizes": "256x256",
       "type": "image/png"
+    },
+    {
+      "src": "promo/icon512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ]
+  ],
+  "categories": ["photo", "productivity", "graphics"]
 }

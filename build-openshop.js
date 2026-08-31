@@ -302,8 +302,9 @@ select option {
 		<meta name="theme-color" content="#474747">
 		<title>Open-Shop | Online Image Editor</title>
 		
+		<link rel="manifest" href="manifest.json" />
 		<link rel="icon" href="promo/icon.svg" type="image/svg+xml" />
-		<link rel="stylesheet" href="style/all.css?v=34" />
+		<link rel="stylesheet" href="style/all.css?v=35" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -311,7 +312,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=34"></script>
+		<script src="code/openshop-logger.js?v=35"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -321,13 +322,23 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=34"></script>
-		<script src="code/dbs.js?v=34"></script>
-		<script src="code/openshop.js?v=34"></script>
+		<script src="code/external/ext.js?v=35"></script>
+		<script src="code/dbs.js?v=35"></script>
+		<script src="code/openshop.js?v=35"></script>
 		
-		<script src="code/openshop-recovery.js?v=34"></script>
-		<script src="code/openshop-agent.js?v=34"></script>
-		<script src="code/openshop-memory.js?v=34"></script>
+		<script src="code/openshop-recovery.js?v=35"></script>
+		<script src="code/openshop-agent.js?v=35"></script>
+		<script src="code/openshop-memory.js?v=35"></script>
+		<script src="code/openshop-autosave.js?v=35"></script>
+		<script src="code/openshop-batch.js?v=35"></script>
+
+		<script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('./sw.js').catch(() => {});
+				});
+			}
+		</script>
 	</body>
 </html>
 `;

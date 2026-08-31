@@ -2,10 +2,14 @@
   "name": "open-shop",
   "version": "1.0.0",
   "description": "Open-Shop - Advanced in-browser raster and vector graphics editor",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "start": "node server.mjs",
-    "serve": "npx serve ."
+    "dev": "node server.mjs",
+    "build": "node build-openshop.js",
+    "test": "node tests/regression.mjs && node --check code/openshop.js && node --check code/dbs.js && node --check code/external/ext.js",
+    "cli": "node bin/openshop-cli.mjs"
   },
   "keywords": [
     "open-shop",
