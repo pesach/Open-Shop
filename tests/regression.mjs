@@ -51,6 +51,13 @@ async function run() {
     'api/openshop-node.mjs',
     'bin/openshop-cli.mjs',
     'promo/icon.svg',
+    'promo/icon512.png',
+    'promo/icon256.png',
+    'promo/icon192.png',
+    'promo/icon64.png',
+    'promo/icon32.png',
+    'favicon.png',
+    'favicon.ico',
     'promo/logo.svg',
     'demo.psd'
   ];
