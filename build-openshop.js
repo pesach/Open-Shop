@@ -58,6 +58,7 @@ async function build() {
   dbsCode = dbsCode.replaceAll('vectorpea', 'openshop');
   dbsCode = dbsCode.replaceAll('Jampea', 'OpenShop');
   dbsCode = dbsCode.replaceAll('jampea', 'openshop');
+  dbsCode = dbsCode.replace(/var PMRK\s*=\s*\[[\s\S]*?\];/, 'var PMRK = [];');
   fs.writeFileSync('code/dbs.js', dbsCode, 'utf8');
 
   console.log('--- Step 5: Patching and Generating code/openshop.js ---');
@@ -151,7 +152,13 @@ async function build() {
     'window.app=new dj();document.body.appendChild(window.app.$);'
   );
 
-  // 10. General Branding & naming replacement across openshop.js
+  // 10. Remove PeaMark and About OpenShop from More menu
+  ppCode = ppCode.replace(
+    'Y.items.push({name:"PeaMark"});Y.Ii.push({N:G.E.b,M:{S:G.m.bq,V$:"peamark"}});Y.items.push({name:"",d:function(Q,s){return s.h1?{Kg:"About "+["Photopea","Vectorpea"][d7],d:!0}:{Kg:"",d:!1}}});Y.Ii.push({N:G.E.b,M:{S:G.m.bq,V$:"aboutpp"}});',
+    '/* PeaMark and About removed from More menu */'
+  );
+
+  // 11. General Branding & naming replacement across openshop.js
   ppCode = ppCode.replaceAll('Photopea', 'OpenShop');
   ppCode = ppCode.replaceAll('photopea', 'openshop');
   ppCode = ppCode.replaceAll('Vectorpea', 'OpenShop');
@@ -304,7 +311,7 @@ select option {
 		
 		<link rel="manifest" href="manifest.json" />
 		<link rel="icon" href="promo/icon.svg" type="image/svg+xml" />
-		<link rel="stylesheet" href="style/all.css?v=35" />
+		<link rel="stylesheet" href="style/all.css?v=36" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700,700i" />
 		
 		<style>
@@ -312,7 +319,7 @@ select option {
 		</style>
 		
 		<!-- Diagnostics Engine -->
-		<script src="code/openshop-logger.js?v=35"></script>
+		<script src="code/openshop-logger.js?v=36"></script>
 	</head>
 	<body class="theme0">
 		<div id="cap" style="display:none;"></div>
@@ -322,15 +329,15 @@ select option {
 			function hideCap(){}
 		</script>
 		
-		<script src="code/external/ext.js?v=35"></script>
-		<script src="code/dbs.js?v=35"></script>
-		<script src="code/openshop.js?v=35"></script>
+		<script src="code/external/ext.js?v=36"></script>
+		<script src="code/dbs.js?v=36"></script>
+		<script src="code/openshop.js?v=36"></script>
 		
-		<script src="code/openshop-recovery.js?v=35"></script>
-		<script src="code/openshop-agent.js?v=35"></script>
-		<script src="code/openshop-memory.js?v=35"></script>
-		<script src="code/openshop-autosave.js?v=35"></script>
-		<script src="code/openshop-batch.js?v=35"></script>
+		<script src="code/openshop-recovery.js?v=36"></script>
+		<script src="code/openshop-agent.js?v=36"></script>
+		<script src="code/openshop-memory.js?v=36"></script>
+		<script src="code/openshop-autosave.js?v=36"></script>
+		<script src="code/openshop-batch.js?v=36"></script>
 
 		<script>
 			if ('serviceWorker' in navigator) {

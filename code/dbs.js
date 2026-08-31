@@ -15960,36 +15960,7 @@ var SHPS = [
 ];
 
 
-var PMRK = [  // Peamark results
-	// 0: desktop, 1: laptop, 2: tablet, 3: phone
-	[0, "Ryzen 9 7900X + RTX 3080 Ti", 1411, 13059],
-	[0, "Raspberry Pi 5"   ,  370,  17],
-	[0, "Raspberry Pi 400" ,  150,   6],
-	[0, "Mac Mini M4 (Base)",1580,2023], 
-	[0, "Mac Mini M4 (Pro)" ,1600,2900], 
-		
-	[1, "Ryzen 7 5700U"    , 1000,1000],
-	[1, "MacBook Air 2017" ,  539, 367],  //  Core i5 5250U
-	[1, "MacBook Pro M3"   , 1600,1333], 
-	[1, "MacBook Pro M1"   , 1394,1856], 
-	[1, "MacBook Air M1"   , 1273, 971], 
-	[1, "HP ProBook 430, i5-1135G7" , 782, 858],
-	[1, "Lenovo T480, Core i5 8350U", 753, 210],
-	[1, "Lenovo Flex 3, Intel N200" , 651, 177],
-		
-	[2, "iPad Air 4th Gen" , 1386, 386],
-		
-	[3, "iPhone 15 Pro"    , 1700, 934],
-	[3, "iPhone 13 Pro Max", 1476, 556],
-	[3, "iPhone SE 2020"   , 1180, 303],
-	[3, "Google Pixel 6a"  ,  830, 638],
-	[3, "Sony Xperia 1 II" ,  410, 720],
-	[3, "iPhone 11"        ,  827, 207],
-	[3, "LG G4 (2015)"     ,  111,  87],
-	[3, "Google Nexus 7 2013",   48,  36],
-		
-	[0, "Your Device"      ,    0,   0]
-];
+var PMRK = [];
 
 
 
